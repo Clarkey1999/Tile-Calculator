@@ -325,26 +325,34 @@ function diagram(c){
   /* ══ ZONE FILLS — outside-in: concrete → tile → coping (stone) → water ══ */
   if(c.hasConc) s+=rct(0,0,oL,oW,'fill="#201209" rx="7" filter="url(#dropsh)"');
   if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="#081d38" rx="4" filter="url(#dropsh)"');
-  /* coping — charcoal granite tone, speckled stone texture */
-  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#stoneBase)" rx="3" filter="url(#dropsh)"');
-  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#stoneTex)" rx="3"');
-  /* water — deep multi-stop gradient base (deep end darker, shallow end lighter) */
-  s+=rct(oPX,oPY,pL,pW,'fill="url(#waterDeep)"');
-  /* ── Steps at the shallow end (right side) — always shown, receding bands toward the wall ── */
+  /* coping — charcoal granite, fine turbulence-based fleck texture */
+  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#stoneBase)" rx="3" filter="url(#graniteFleck)"');
+  /* water — uniform bright turquoise with organic caustic light texture */
+  s+=rct(oPX,oPY,pL,pW,'fill="url(#waterDeep)" filter="url(#caustics)"');
+  /* ── Inner wall/bevel band — the sloped pool wall visible just inside the coping edge.
+       This is the main thing that reads as real 3D depth: a darker frame where the wall
+       drops away from the rim, with a bright highlight right at the coping seam. ── */
   (function(){
-    var nSteps=4, stepDepth=pL*0.11, stepStart=oPX+pL-stepDepth*nSteps;
+    var bev=Math.max(0.1,Math.min(pL,pW)*0.035);
+    /* bright rim-light exactly at the coping/water seam */
+    s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="#eaf9ff" stroke-opacity="0.55" stroke-width="'+f2(Math.max(1,bev*sc*0.35))+'"');
+    /* darker bevel band just inside — the wall face in shadow */
+    s+=rct(oPX+bev,oPY+bev,Math.max(0,pL-bev*2),Math.max(0,pW-bev*2),
+      'fill="none" stroke="#04202e" stroke-opacity="0.4" stroke-width="'+f2(Math.max(1.5,bev*sc*0.6))+'"');
+  })();
+  /* ── Steps at the shallow end (right side) — crisp riser edges, flat pale panels ── */
+  (function(){
+    var nSteps=4, stepDepth=pL*0.105, stepStart=oPX+pL-stepDepth*nSteps;
+    var opacs=[0.38,0.48,0.58,0.70];
+    var fills=['#bfe3f2','#cceaf4','#dbf1f8','#eaf7fb'];
     for(var i=0;i<nSteps;i++){
-      var stepOpac=0.10+i*0.085; /* each step slightly paler as it rises toward the pool edge */
-      s+=rct(stepStart+i*stepDepth, oPY, stepDepth, pW, 'fill="#eaf6ff" opacity="'+f2(stepOpac)+'"');
-      /* fine divider line between each step for a real stepped-edge look */
-      s+=rct(stepStart+i*stepDepth, oPY, 0.02, pW, 'fill="rgba(255,255,255,.3)"');
+      var x=stepStart+i*stepDepth;
+      s+=rct(x,oPY,stepDepth,pW,'fill="'+fills[i]+'" opacity="'+opacs[i]+'"');
+      /* dark riser line — the physical edge/shadow of the step drop */
+      s+=rct(x,oPY,Math.max(0.4/sc,0.015),pW,'fill="#000818" opacity="0.4"');
     }
   })();
-  /* caustic ripple layers — two offset patterns for real depth, not one squiggle */
-  s+=rct(oPX,oPY,pL,pW,'fill="url(#ripple1)" opacity="0.55"');
-  s+=rct(oPX,oPY,pL,pW,'fill="url(#ripple2)" opacity="0.35"');
-  /* specular light band — soft diagonal sheen like light hitting water */
-  s+=rct(oPX,oPY,pL,pW,'fill="url(#sheen)"');
+  /* (diagonal sheen removed — was creating an unwanted left-right brightness gradient) */
   /* vignette to deepen the corners of the water */
   s+=rct(oPX,oPY,pL,pW,'fill="url(#vignette)"');
 
@@ -397,23 +405,22 @@ function diagram(c){
   return '<svg class="pool" viewBox="0 0 '+W+' '+H+'">'
     +'<defs>'
 
-    /* ── Water: deep 4-stop gradient for real depth ── */
-    +'<linearGradient id="waterDeep" x1="0" y1="0.1" x2="1" y2="0.02">'
-    +'<stop offset="0%" stop-color="#041c42"/>'
-    +'<stop offset="22%" stop-color="#0a3d78"/>'
-    +'<stop offset="55%" stop-color="#1272b8"/>'
-    +'<stop offset="82%" stop-color="#2ba0dc"/>'
-    +'<stop offset="100%" stop-color="#4fc2ec"/>'
+    /* ── Water: uniform bright turquoise, subtle top-lit shading only (matches real pool photos) ── */
+    +'<linearGradient id="waterDeep" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="#3fc6dc"/>'
+    +'<stop offset="45%" stop-color="#2ba8c8"/>'
+    +'<stop offset="100%" stop-color="#1c86ac"/>'
     +'</linearGradient>'
 
-    /* ── Two independent ripple/caustic patterns at different scales & angles ── */
-    +'<pattern id="ripple1" patternUnits="userSpaceOnUse" width="70" height="34" patternTransform="rotate(4)">'
-    +'<path d="M0 17 Q17.5 4 35 17 T70 17" fill="none" stroke="#5fd0ff" stroke-width="1.4" opacity=".5"/>'
-    +'<path d="M0 30 Q17.5 20 35 30 T70 30" fill="none" stroke="#8fe0ff" stroke-width="1" opacity=".3"/>'
-    +'</pattern>'
-    +'<pattern id="ripple2" patternUnits="userSpaceOnUse" width="53" height="27" patternTransform="rotate(-7)">'
-    +'<path d="M0 13 Q13 3 26 13 T53 13" fill="none" stroke="#bdeeff" stroke-width="0.9" opacity=".4"/>'
-    +'</pattern>'
+    /* ── Cellular caustic light pattern — organic turbulence-based, like real refracted sunlight on water ── */
+    +'<filter id="caustics" x="-15%" y="-15%" width="130%" height="130%">'
+    +'<feTurbulence type="turbulence" baseFrequency="0.028 0.032" numOctaves="3" seed="9" result="n1"/>'
+    +'<feColorMatrix in="n1" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 2.4 -1.05" result="bright"/>'
+    +'<feGaussianBlur in="bright" stdDeviation="0.4" result="brightSoft"/>'
+    +'<feTurbulence type="turbulence" baseFrequency="0.09 0.1" numOctaves="2" seed="3" result="n2"/>'
+    +'<feColorMatrix in="n2" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -1.15" result="fine"/>'
+    +'<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="brightSoft"/><feMergeNode in="fine"/></feMerge>'
+    +'</filter>'
 
     /* ── Sheen: soft diagonal light band across the water ── */
     +'<linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0.7">'
@@ -430,23 +437,17 @@ function diagram(c){
     +'<stop offset="100%" stop-color="#001428" stop-opacity=".38"/>'
     +'</radialGradient>'
 
-    /* ── Coping: warm travertine base + subtle stone-tile texture ── */
-    /* ── Coping: charcoal granite base + speckled fleck texture ── */
+    /* ── Coping: charcoal granite — fine dense turbulence speckle, not scattered dots ── */
     +'<linearGradient id="stoneBase" x1="0" y1="0" x2="0" y2="1">'
-    +'<stop offset="0%" stop-color="#6b6f75"/>'
-    +'<stop offset="50%" stop-color="#54585e"/>'
-    +'<stop offset="100%" stop-color="#3c3f45"/>'
+    +'<stop offset="0%" stop-color="#4a4e53"/>'
+    +'<stop offset="100%" stop-color="#2e3134"/>'
     +'</linearGradient>'
-    +'<pattern id="stoneTex" patternUnits="userSpaceOnUse" width="18" height="18" patternTransform="rotate(8)">'
-    +'<rect width="18" height="18" fill="none"/>'
-    +'<circle cx="3" cy="4" r="0.55" fill="#e8eaec" opacity=".35"/>'
-    +'<circle cx="9.5" cy="2.5" r="0.4" fill="#d8dadc" opacity=".28"/>'
-    +'<circle cx="14" cy="7" r="0.6" fill="#f0f2f4" opacity=".3"/>'
-    +'<circle cx="5.5" cy="11" r="0.45" fill="#202226" opacity=".4"/>'
-    +'<circle cx="12" cy="13.5" r="0.5" fill="#e0e2e4" opacity=".25"/>'
-    +'<circle cx="16" cy="15.5" r="0.35" fill="#181a1d" opacity=".38"/>'
-    +'<circle cx="2" cy="16" r="0.5" fill="#c8cace" opacity=".22"/>'
-    +'</pattern>'
+    +'<filter id="graniteFleck" x="-5%" y="-5%" width="110%" height="110%">'
+    +'<feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="3" seed="4" result="noise"/>'
+    +'<feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.1  0 0 0 0 0.11  0 0 0 0 0.12  0 0 0 0.85 0" result="darkfleck"/>'
+    +'<feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.72  0 0 0 0 0.74  0 0 0 0 0.77  0 0 0 0.32 -0.14" result="lightfleck"/>'
+    +'<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="darkfleck"/><feMergeNode in="lightfleck"/></feMerge>'
+    +'</filter>'
 
     /* ── Drop shadow used under each zone for real layered depth ── */
     +'<filter id="dropsh" x="-20%" y="-20%" width="140%" height="140%">'
@@ -542,7 +543,7 @@ function render(){
   h+='<div class="card"><div class="pad diag-wrap"><div class="diag-head">Pool Layout — Top View</div>'+diagram(c)+'</div>';
   /* legend below diagram */
   h+='<div class="diag-legend">';
-  h+='<div class="leg-item"><div class="leg-swatch" style="background:linear-gradient(180deg,#6b6f75,#3c3f45)"></div>Coping (included)</div>';
+  h+='<div class="leg-item"><div class="leg-swatch" style="background:linear-gradient(180deg,#d8c4a0,#a88a5c)"></div>Coping (included)</div>';
   h+='<div class="leg-item"><div class="leg-swatch" style="background:#1258a8"></div>Tile — $470/m²</div>';
   if(c.hasConc) h+='<div class="leg-item"><div class="leg-swatch" style="background:#1c0b03"></div>Concrete — $220/m²</div>';
   h+='</div></div>';
