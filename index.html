@@ -2,146 +2,254 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paradise Pools — Tile & Concrete Calculator</title>
-
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#07111b">
-
-<!-- iOS install support -->
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Tile Calc">
-
-<!-- Standard favicon -->
+<meta name="apple-mobile-web-app-title" content="Pool Calc">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#03090f">
+<title>Paradise Pools — Tile & Concrete Calculator</title>
+<link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#07111b; --p1:#0c1e2e; --p2:#112335; --p3:#172c40;
-  --bd:#1c3450; --bd2:#254870;
-  --water:#1778c0; --whi:#3ca4ec; --good:#18c484; --warn:#df9a16;
-  --cop:#c2b28a; --conc:#9a7550;
-  --white:#e8f2fc; --mid:#5e84a2; --dim:#2e4560;
-  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+:root{
+  --bg:#03090f;
+  --s1:#07111c;
+  --s2:#091520;
+  --b1:rgba(255,255,255,0.055);
+  --b2:rgba(255,255,255,0.10);
+  --b3:rgba(0,160,255,0.22);
+  --ac:#00aaff;
+  --good:#00d48a;
+  --warn:#f5a020;
+  --cop:#7ab8d8;
+  --conc:#b07844;
+  --tx:#ddeeff;
+  --tx2:#7aaccc;
+  --tx3:#4a7898;
+  --f:'Inter',system-ui,sans-serif;
+  --m:ui-monospace,'Cascadia Code',Consolas,monospace;
+  --r:16px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:14px;}
 body{
-  min-height:100vh;
-  background:var(--bg);
+  min-height:100vh;font-family:var(--f);-webkit-font-smoothing:antialiased;
+  color:var(--tx);background:var(--bg);
   background-image:
-    radial-gradient(ellipse 1000px 600px at 80% -10%,#0d2d48 0%,transparent 55%),
-    radial-gradient(circle at 1.5px 1.5px,#111f2e 1px,transparent 0);
-  background-size:auto,22px 22px;
-  color:var(--white);
-  font-family:var(--sans);
-  -webkit-font-smoothing:antialiased;
-  padding:20px 22px 50px;
+    radial-gradient(ellipse 1000px 500px at 65% -10%,rgba(0,80,170,.16) 0%,transparent 60%),
+    radial-gradient(ellipse 500px 400px at -5% 85%,rgba(0,50,120,.11) 0%,transparent 55%);
+  padding:18px 18px 60px;
+  padding-top:max(18px,env(safe-area-inset-top));
+  padding-right:max(18px,env(safe-area-inset-right));
+  padding-bottom:max(60px,calc(40px + env(safe-area-inset-bottom)));
+  padding-left:max(18px,env(safe-area-inset-left));
 }
-.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--bd);}
-.logo{display:flex;align-items:center;gap:14px;}
-.logo-icon{width:42px;height:42px;border-radius:11px;flex-shrink:0;background:linear-gradient(145deg,#1778c0,#0d4f8a);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(23,120,192,.4);}
-.logo-icon svg{width:23px;height:23px;fill:none;stroke:#fff;stroke-width:1.8;}
-.brand-eye{font-size:9px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--mid);margin-bottom:3px;}
-.brand-name{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1;}
-.topbar-btns{display:flex;gap:8px;flex-shrink:0;}
-.btn{font-family:var(--sans);cursor:pointer;border:1px solid var(--bd2);background:var(--p2);color:var(--mid);border-radius:9px;padding:9px 15px;font-size:12px;font-weight:700;letter-spacing:.03em;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap;}
-.btn:hover{border-color:var(--whi);color:var(--white);background:var(--p3);}
-.btn svg{width:13px;height:13px;flex-shrink:0;}
-.btn-primary{background:var(--water);border-color:var(--water);color:#fff;}
-.btn-primary:hover{background:var(--whi);border-color:var(--whi);}
-.panel{background:var(--p1);border:1px solid var(--bd);border-radius:14px;overflow:hidden;}
-.pb{padding:16px 20px;}
-.pb+.pb{border-top:1px solid var(--bd);}
-.sl{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);margin-bottom:13px;}
-.sl .r{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--whi);}
-.sl .g{color:var(--good);font-weight:700;}
-.sl .w{color:var(--warn);font-weight:700;}
-.f{margin-bottom:11px;}
-.f:last-child{margin-bottom:0;}
-.fl{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mid);margin-bottom:5px;}
-.fh{font-size:9px;color:var(--dim);margin-top:3px;}
-input[type=number],input[type=text]{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:7px;color:var(--white);font-size:14px;font-weight:600;padding:8px 11px;outline:none;font-family:var(--sans);transition:border-color .15s;}
-input:focus{border-color:var(--water);box-shadow:0 0 0 3px rgba(23,120,192,.14);}
-.spin{display:flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden;height:38px;}
-.sb{min-width:38px;background:var(--p3);border:none;color:var(--mid);font-size:20px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;}
-.sb:hover{background:var(--bd2);color:var(--white);}
-.sv{flex:1;min-width:32px;text-align:center;font-family:var(--mono);font-weight:800;font-size:16px;color:var(--whi);background:var(--bg);border-left:1px solid var(--bd);border-right:1px solid var(--bd);display:flex;align-items:center;justify-content:center;}
-.tog{border:1px solid var(--bd);border-radius:9px;background:var(--bg);padding:10px 13px;cursor:pointer;margin-bottom:8px;transition:all .15s;user-select:none;}
-.tog:last-of-type{margin-bottom:0;}
-.tog:hover{border-color:var(--bd2);background:var(--p2);}
-.tog.on{border-color:var(--water);background:#0a2640;}
-.tog.off{opacity:.32;pointer-events:none;}
-.tt{font-size:12px;font-weight:600;color:var(--mid);line-height:1.3;}
-.tog.on .tt{color:var(--whi);}
-.ts{font-size:10px;color:var(--dim);margin-top:3px;}
-.main-layout{display:grid;grid-template-columns:360px 1fr;gap:14px;align-items:start;}
-.left-col{display:flex;flex-direction:column;gap:14px;}
-.diag-head{padding:13px 20px 8px;font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);}
-svg.pool{display:block;width:100%;height:auto;}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.j4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-.sg{display:grid;gap:1px;background:var(--bd);border-radius:11px;overflow:hidden;}
-.sg3{grid-template-columns:repeat(3,1fr);}
-.sg4{grid-template-columns:repeat(4,1fr);}
-.sc{background:var(--p1);padding:12px 15px;}
-.scl{font-size:8.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);margin-bottom:4px;}
-.scv{font-size:20px;font-weight:800;font-family:var(--mono);line-height:1;color:var(--white);}
-.scv .u{font-size:10px;font-weight:500;color:var(--mid);margin-left:3px;}
-.scs{font-size:10px;color:var(--dim);margin-top:4px;}
-.hi{color:var(--whi)!important;}
-.co{color:var(--cop)!important;}
-.cn{color:#b08860!important;}
-.wn{color:var(--warn)!important;}
-.m4{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);border-radius:9px;overflow:hidden;margin-top:10px;}
-.mc{background:var(--p1);padding:10px 13px;}
-.mcl{font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);}
-.mcv{font-size:17px;font-weight:800;font-family:var(--mono);margin-top:2px;}
-.mcv .u{font-size:9px;font-weight:500;color:var(--mid);margin-left:2px;}
-.mcs{font-size:10px;color:var(--mid);}
-.mco{font-size:9px;color:var(--dim);}
-.qs-items{display:grid;gap:1px;background:var(--bd);border-radius:11px 11px 0 0;overflow:hidden;}
-.qs-total{background:#091f34;border:1px solid var(--water);border-top:2px solid var(--water);border-radius:0 0 11px 11px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.qt-label{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--whi);}
-.qt-detail{font-size:11px;color:var(--mid);font-family:var(--mono);margin-top:3px;}
-.qt-val{font-size:32px;font-weight:800;font-family:var(--mono);color:var(--whi);line-height:1;}
-.qi{background:var(--p1);padding:14px 18px;}
-.qil{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);margin-bottom:4px;}
-.qid{font-size:10px;color:var(--dim);font-family:var(--mono);margin-bottom:5px;}
-.qiv{font-size:20px;font-weight:800;font-family:var(--mono);line-height:1;}
-.savebar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 20px;background:var(--p2);border-bottom:1px solid var(--bd);}
 
-.save-tag{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);}
-.save-ct{font-size:10px;color:var(--dim);margin-left:auto;}
-.trace{font-family:var(--mono);font-size:11.5px;color:var(--mid);line-height:2.1;padding:15px 20px;background:var(--bg);border-top:1px solid var(--bd);}
-.trace b{color:var(--white);font-weight:600;}
-.th{color:var(--whi);font-weight:700;}
-.tc{color:#b08860;font-weight:700;}
-.tw{color:var(--warn);font-weight:700;}
+/* ── layout ── */
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:13px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;align-items:start;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;align-items:start;}
+.g2i{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.g4i{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;}
+
+/* ── card ── */
+.card{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;
+  box-shadow:0 2px 18px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.03);
+  transition:border-color .18s;
+}
+.card:hover{border-color:var(--b2);}
+.pad{padding:17px 20px;}
+.pad+.pad{border-top:1px solid var(--b1);}
+
+/* ── section heading ── */
+.sh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px;}
+.sh-l{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--tx2);}
+.sh-bar{width:2px;height:12px;border-radius:1px;background:var(--ac);box-shadow:0 0 6px var(--ac);flex-shrink:0;}
+.sh-r{font-family:var(--m);font-size:11px;font-weight:600;color:var(--ac);}
+.sh-g{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--good);}
+.sh-w{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);}
+
+/* ── header ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;
+  background:linear-gradient(135deg,rgba(9,22,42,.97),rgba(4,12,24,.99));
+  border:1px solid var(--b2);border-radius:var(--r);
+  box-shadow:0 4px 26px rgba(0,0,0,.55);
+}
+.logo{display:flex;align-items:center;gap:15px;}
+.logo-img{height:82px;width:auto;object-fit:contain;filter:brightness(1.08) drop-shadow(0 2px 12px rgba(0,130,255,.26));}
+.logo-fb{height:82px;width:82px;border-radius:16px;background:linear-gradient(145deg,#0090e0,#004a99);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 16px rgba(0,120,220,.4);}
+.logo-fb svg{width:36px;height:36px;fill:none;stroke:#fff;stroke-width:1.8;}
+.brand{display:flex;flex-direction:column;gap:4px;}
+.brand-sub{font-size:10px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--tx3);}
+.brand-name{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1;background:linear-gradient(100deg,#fff 0%,#90d8ff 55%,var(--ac) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.top-btns{display:flex;gap:8px;flex-shrink:0;}
+
+/* ── buttons ── */
+.btn{font-family:var(--f);cursor:pointer;border:1px solid var(--b2);background:rgba(255,255,255,.04);color:var(--tx2);border-radius:9px;padding:9px 16px;font-size:12px;font-weight:600;letter-spacing:.02em;display:inline-flex;align-items:center;gap:7px;transition:all .16s;white-space:nowrap;box-shadow:0 1px 5px rgba(0,0,0,.22);}
+.btn:hover{border-color:var(--b3);color:var(--tx);background:rgba(0,160,255,.07);}
+.btn:active{transform:scale(.97);}
+.btn svg{width:13px;height:13px;flex-shrink:0;}
+.btn-p{background:linear-gradient(135deg,#0090e8,#004ea0);border-color:rgba(0,160,255,.35);color:#fff;box-shadow:0 2px 14px rgba(0,140,230,.28);}
+.btn-p:hover{background:linear-gradient(135deg,#18a8ff,#0066cc);box-shadow:0 3px 18px rgba(0,160,255,.42);}
+
+/* ── save bar ── */
+.savebar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 20px;background:rgba(0,160,255,.025);border-bottom:1px solid var(--b1);}
+.save-label{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--tx3);}
+.save-hint{font-size:10px;color:var(--tx3);margin-left:auto;}
+
+/* ── fields ── */
+.f{margin-bottom:12px;}.f:last-child{margin-bottom:0;}
+.fl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2);margin-bottom:6px;}
+.fh{font-size:10px;color:var(--tx3);margin-top:4px;line-height:1.5;}
+input[type=number],input[type=text]{
+  width:100%;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.08);border-radius:9px;
+  color:var(--tx);font-size:14px;font-weight:600;padding:9px 13px;outline:none;font-family:var(--f);
+  transition:border-color .16s,box-shadow .16s;
+}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+input[type=number]{-moz-appearance:textfield;}
+input:hover{border-color:rgba(0,160,255,.22);}
+input:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(0,170,255,.11);}
+input::placeholder{color:var(--tx3);font-weight:400;}
+
+/* ── row spinners ── */
+.spin{display:flex;border:1px solid rgba(255,255,255,.09);border-radius:9px;overflow:hidden;height:40px;background:rgba(0,0,0,.28);transition:border-color .16s;}
+.spin:hover{border-color:rgba(0,160,255,.26);}
+.sb{min-width:40px;background:none;border:none;color:var(--tx3);font-size:18px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .13s;flex-shrink:0;font-family:var(--f);}
+.sb:hover{background:rgba(0,160,255,.1);color:var(--ac);}
+.sb:active{background:rgba(0,160,255,.18);}
+.sv{flex:1;min-width:36px;text-align:center;font-family:var(--m);font-weight:800;font-size:18px;color:var(--tx);border-left:1px solid rgba(255,255,255,.07);border-right:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;}
+
+/* ── toggles ── */
+.tog{display:flex;align-items:center;gap:13px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:rgba(0,0,0,.2);padding:12px 15px;cursor:pointer;margin-bottom:7px;transition:all .16s;user-select:none;}
+.tog:last-of-type{margin-bottom:0;}
+.tog:hover{border-color:rgba(0,160,255,.2);background:rgba(0,160,255,.04);}
+.tog.on{border-color:rgba(0,160,255,.36);background:rgba(0,160,255,.08);}
+.tog.off{opacity:.26;pointer-events:none;}
+.tog-dot{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .16s;}
+.tog-dot::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--ac);box-shadow:0 0 7px var(--ac);opacity:0;transform:scale(0);transition:all .18s;}
+.tog.on .tog-dot{border-color:var(--ac);}
+.tog.on .tog-dot::after{opacity:1;transform:scale(1);}
+.tog-body{flex:1;}
+.tog-title{font-size:13px;font-weight:600;color:var(--tx2);line-height:1.3;transition:color .16s;}
+.tog.on .tog-title{color:var(--tx);}
+.tog-sub{font-size:10px;color:var(--tx3);margin-top:2px;}
+
+/* ── diagram card ── */
+.diag-wrap{padding-bottom:0;}
+.diag-head{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--tx2);margin-bottom:10px;}
+.diag-head::before{content:'';width:2px;height:12px;border-radius:1px;background:var(--ac);box-shadow:0 0 5px var(--ac);flex-shrink:0;}
+svg.pool{display:block;width:100%;height:auto;}
+.diag-legend{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:12px 20px 14px;border-top:1px solid var(--b1);}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--tx2);font-weight:500;}
+.leg-swatch{width:14px;height:14px;border-radius:4px;flex-shrink:0;border:1px solid rgba(255,255,255,.12);}
+
+/* ── stat grid ── */
+.sg{display:grid;gap:1px;background:rgba(0,0,0,.5);border-radius:13px;overflow:hidden;margin-bottom:12px;}
+.sg3{grid-template-columns:repeat(3,1fr);}
+.sc{background:rgba(5,13,23,.92);padding:16px 18px;}
+.scl{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx2);margin-bottom:7px;}
+.scv{font-size:28px;font-weight:800;font-family:var(--m);line-height:1;color:var(--tx);}
+.scv .u{font-size:12px;font-weight:400;color:var(--tx2);margin-left:3px;}
+.scs{font-size:10px;color:var(--tx2);margin-top:5px;font-family:var(--m);}
+
+/* ── mini cells ── */
+.m4{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(0,0,0,.5);border-radius:11px;overflow:hidden;}
+.mc{background:rgba(5,13,23,.92);padding:12px 15px;}
+.mcl{font-size:8.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--tx2);margin-bottom:4px;}
+.mcv{font-size:20px;font-weight:800;font-family:var(--m);}
+.mcv .u{font-size:10px;font-weight:400;color:var(--tx2);margin-left:3px;}
+.mcs{font-size:10px;color:var(--tx2);margin-top:3px;font-family:var(--m);}
+.mco{font-size:9px;color:var(--tx3);margin-top:2px;}
+
+/* ── colors ── */
+.hi{color:#55ccff!important;}
+.co{color:var(--cop)!important;}
+.cn{color:var(--conc)!important;}
+.wn{color:var(--warn)!important;}
+
+/* ── quote items ── */
+.qs-items{display:grid;gap:1px;background:rgba(0,0,0,.5);border-radius:13px 13px 0 0;overflow:hidden;}
+.qi{background:rgba(5,13,23,.92);padding:18px 22px;}
+.qil{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx2);margin-bottom:5px;}
+.qid{font-size:10px;color:var(--tx2);font-family:var(--m);margin-bottom:7px;line-height:1.6;}
+.qiv{font-size:24px;font-weight:800;font-family:var(--m);color:var(--tx);}
+
+/* ── total ── */
+.qs-total{background:linear-gradient(135deg,rgba(0,50,110,.5),rgba(0,24,58,.72));border:1px solid rgba(0,160,255,.28);border-top:2px solid var(--ac);border-radius:0 0 13px 13px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.qt-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);margin-bottom:7px;}
+.qt-detail{font-size:11px;color:var(--tx2);font-family:var(--m);line-height:2;}
+.qt-val{font-size:44px;font-weight:900;font-family:var(--m);line-height:1;letter-spacing:-.025em;background:linear-gradient(130deg,#fff 0%,#88ddff 45%,var(--ac) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 16px rgba(0,180,255,.22));}
+
+/* ── trace ── */
+.trace{font-family:var(--m);font-size:12px;color:var(--tx2);line-height:2.2;padding:16px 20px;background:rgba(0,0,0,.2);border-top:1px solid var(--b1);}
+.trace b{color:var(--tx);font-weight:600;}
+.th{color:#55ccff;font-weight:700;}.tc{color:var(--conc);font-weight:700;}.tw{color:var(--warn);font-weight:700;}
+
+/* ── print ── */
 @media print{
   body{background:#fff;color:#000;padding:0;background-image:none;}
   .no-print{display:none!important;}
-  .panel,.sc,.mc,.qi,.qs-total,.trace{background:#fff!important;border-color:#ccc!important;break-inside:avoid;}
-  .scv,.qiv,.qt-val,.mcv,.brand-name{color:#000!important;}
-  .hi,.qt-val{color:#0055bb!important;}
-  .co{color:#7a6040!important;} .cn{color:#6b4828!important;} .wn{color:#a07000!important;}
-  .qs-total{background:#e8f2ff!important;border-color:#0055bb!important;}
-  .logo-icon{background:#0055bb!important;}
+  .card,.sc,.mc,.qi,.qs-total,.trace{background:#fff!important;border-color:#ccc!important;break-inside:avoid;box-shadow:none!important;}
+  .scv,.qiv,.mcv,.brand-name,.qt-val{color:#000!important;-webkit-text-fill-color:#000!important;background:none!important;filter:none!important;}
+  .hi{color:#005599!important;}.co{color:#7a5820!important;}.cn{color:#7a4010!important;}.wn{color:#a06000!important;}
+  .qs-total{background:#e6f2ff!important;border-color:#0055bb!important;}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
-@media(max-width:900px){
-  .main-layout{grid-template-columns:1fr;}
-  .left-col{order:2;} .right-col{order:1;}
-  .j4{grid-template-columns:1fr 1fr;}
+/* ── Tablet ── */
+@media(max-width:1000px){
+  .g3{grid-template-columns:1fr 1fr;}
 }
-@media(max-width:520px){
-  body{padding:12px 12px 40px;}
-  .j4,.g2{grid-template-columns:1fr;}
-  .topbar{flex-wrap:wrap;gap:10px;}
+/* ── Large phone / small tablet ── */
+@media(max-width:720px){
+  .g3,.g2{grid-template-columns:1fr;}
+  .g4i{grid-template-columns:1fr 1fr;}
+  .topbar{flex-wrap:wrap;gap:10px;padding:12px 16px;}
+  .top-btns{width:100%;}
+  .brand-name{font-size:22px;}
+  .logo-img{height:68px;}
+  .logo-fb{height:68px;width:68px;}
+  .qt-val{font-size:36px;}
+  .sc{padding:13px 15px;}
+  .scv{font-size:24px;}
+  /* bigger touch targets on spinners */
+  .spin{height:48px;}
+  .sb{min-width:48px;font-size:22px;}
+  .sv{font-size:20px;}
+  .diag-legend{gap:12px;padding:10px 16px 12px;}
+}
+/* ── iPhone (390–430px) ── */
+@media(max-width:480px){
+  html{font-size:13px;}
+  .g4i,.g2i{grid-template-columns:1fr;}
+  .m4{grid-template-columns:1fr 1fr;}
+  .brand-name{font-size:19px;}
+  .logo-img{height:58px;}
+  .logo-fb{height:58px;width:58px;}
+  .qt-val{font-size:30px;}
+  .scv{font-size:22px;}
+  .spin{height:52px;}
+  .sb{min-width:52px;font-size:24px;}
+  .sv{font-size:22px;}
+  .topbar{gap:8px;padding:10px 13px;}
+  .qs-total{padding:16px 18px;gap:12px;}
+  .qi{padding:14px 16px;}
+  .pad{padding:14px 15px;}
+  .tog{padding:11px 13px;}
+}
+/* ── Very small (SE, older Android) ── */
+@media(max-width:360px){
+  .brand-name{font-size:17px;}
+  .logo-img{height:50px;}
+  .top-btns .btn span{display:none;}
 }
 </style>
 </head>
@@ -150,8 +258,9 @@ svg.pool{display:block;width:100%;height:auto;}
 <script>
 var ROW_W=0.4;
 var RATES={tile:470,conc:220,pour:1200,pump:1200};
-function f2(n){return n.toFixed(2);}
+function f2(n){return (+n).toFixed(2);}
 function aud(n){return n.toLocaleString("en-AU",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function rLbl(n){return n==1?'1 Row':n+' Rows';}
 
 var S={
   job:{customer:"",address:"",ref:"",date:new Date().toISOString().slice(0,10)},
@@ -162,262 +271,285 @@ var S={
 };
 
 function calc(){
-  var poolL=S.poolL,poolW=S.poolW,copingW=S.copingW,tile=S.tile,conc=S.conc;
-  var watArea=poolL*poolW;
-  var copOL=poolL+copingW*2,copOW=poolW+copingW*2;
-  var copArea=copOL*copOW-watArea;
-  var tD=tile.deep*ROW_W,tS=tile.shallow*ROW_W,tA=tile.sideA*ROW_W,tB=tile.sideB*ROW_W;
-  var tileOL=copOL+tD+tS,tileOW=copOW+tA+tB;
-  var tileArea=tileOL*tileOW-copOL*copOW;
-  var cD=conc.deep*ROW_W,cS=conc.shallow*ROW_W,cA=conc.sideA*ROW_W,cB=conc.sideB*ROW_W;
+  var pL=S.poolL,pW=S.poolW,cW=S.copingW,ti=S.tile,co=S.conc;
+  var watArea=pL*pW;
+  var copOL=pL+cW*2,copOW=pW+cW*2,copArea=copOL*copOW-watArea;
+  var tD=ti.deep*ROW_W,tS=ti.shallow*ROW_W,tA=ti.sideA*ROW_W,tB=ti.sideB*ROW_W;
+  var tileOL=copOL+tD+tS,tileOW=copOW+tA+tB,tileArea=tileOL*tileOW-copOL*copOW;
+  var cD=co.deep*ROW_W,cS=co.shallow*ROW_W,cA=co.sideA*ROW_W,cB=co.sideB*ROW_W;
   var concOL=tileOL+cD+cS,concOW=tileOW+cA+cB;
-  var hasConc=conc.deep+conc.shallow+conc.sideA+conc.sideB>0;
+  var hasConc=co.deep+co.shallow+co.sideA+co.sideB>0;
   var concArea=hasConc?concOL*concOW-tileOL*tileOW:0;
-  var tileCharge=tileArea*RATES.tile;
-  var concCharge=concArea*RATES.conc;
-  var pourFee=hasConc&&S.sep?RATES.pour:0;
-  var pumpFee=S.pump?RATES.pump:0;
+  var tileCharge=tileArea*RATES.tile,concCharge=concArea*RATES.conc;
+  var pourFee=hasConc&&S.sep?RATES.pour:0,pumpFee=S.pump?RATES.pump:0;
   var total=tileCharge+concCharge+pourFee+pumpFee;
-  var tileSides={
-    deep:tile.deep*ROW_W*tileOW,shallow:tile.shallow*ROW_W*tileOW,
-    sideA:tile.sideA*ROW_W*copOL,sideB:tile.sideB*ROW_W*copOL
-  };
-  var concSides={
-    deep:conc.deep*ROW_W*concOW,shallow:conc.shallow*ROW_W*concOW,
-    sideA:conc.sideA*ROW_W*tileOL,sideB:conc.sideB*ROW_W*tileOL
-  };
+  var tSides={deep:ti.deep*ROW_W*tileOW,shallow:ti.shallow*ROW_W*tileOW,sideA:ti.sideA*ROW_W*copOL,sideB:ti.sideB*ROW_W*copOL};
+  var cSides={deep:co.deep*ROW_W*concOW,shallow:co.shallow*ROW_W*concOW,sideA:co.sideA*ROW_W*tileOL,sideB:co.sideB*ROW_W*tileOL};
   return{watArea:watArea,copOL:copOL,copOW:copOW,copArea:copArea,
     tD:tD,tS:tS,tA:tA,tB:tB,tileOL:tileOL,tileOW:tileOW,tileArea:tileArea,
     cD:cD,cS:cS,cA:cA,cB:cB,concOL:concOL,concOW:concOW,concArea:concArea,
     hasConc:hasConc,tileCharge:tileCharge,concCharge:concCharge,
-    pourFee:pourFee,pumpFee:pumpFee,total:total,
-    tileSides:tileSides,concSides:concSides};
+    pourFee:pourFee,pumpFee:pumpFee,total:total,tSides:tSides,cSides:cSides};
 }
 
 function diagram(c){
-  var W=760,H=420,PAD=28;
-  var poolL=S.poolL,poolW=S.poolW,copingW=S.copingW,tile=S.tile,conc=S.conc;
-  var outerL=c.concOL,outerW=c.concOW;
-  var sc=Math.min((W-PAD*2)/outerL,(H-PAD*2)/outerW);
-  var ox=(W-outerL*sc)/2,oy=(H-outerW*sc)/2;
-  function R(rx,ry,rw,rh){return 'x="'+f2(ox+rx*sc)+'" y="'+f2(oy+ry*sc)+'" width="'+f2(rw*sc)+'" height="'+f2(rh*sc)+'"';}
-  function CX(rx,rw){return f2(ox+(rx+rw/2)*sc);}
-  function CY(ry,rh){return f2(oy+(ry+rh/2)*sc);}
-  var oTX=c.cD,oTY=c.cA,oCX=c.cD+c.tD,oCY=c.cA+c.tA,oPX=oCX+copingW,oPY=oCY+copingW;
-  var TC=["#1050a0","#1560ba","#1870d0","#2080e0","#3898f0"];
-  var KC=["#4a3028","#5a3c30","#6a4838","#7a5448","#8a6858"];
-  function fs(n){return Math.max(9,Math.min(13,n));}
-  var s="";
-  var i;
-  for(i=0;i<conc.deep;i++)    s+='<rect '+R(i*ROW_W,0,ROW_W,outerW)+' fill="'+KC[i%5]+'" opacity=".9"/>';
-  for(i=0;i<conc.shallow;i++) s+='<rect '+R(c.cD+c.tileOL+i*ROW_W,0,ROW_W,outerW)+' fill="'+KC[i%5]+'" opacity=".9"/>';
-  for(i=0;i<conc.sideA;i++)   s+='<rect '+R(c.cD,i*ROW_W,c.tileOL,ROW_W)+' fill="'+KC[i%5]+'" opacity=".9"/>';
-  for(i=0;i<conc.sideB;i++)   s+='<rect '+R(c.cD,c.cA+c.tileOW+i*ROW_W,c.tileOL,ROW_W)+' fill="'+KC[i%5]+'" opacity=".9"/>';
-  for(i=0;i<tile.deep;i++)    s+='<rect '+R(oTX+i*ROW_W,oTY,ROW_W,c.tileOW)+' fill="'+TC[i%5]+'" opacity=".92"/>';
-  for(i=0;i<tile.shallow;i++) s+='<rect '+R(oTX+c.tD+c.copOL+i*ROW_W,oTY,ROW_W,c.tileOW)+' fill="'+TC[i%5]+'" opacity=".92"/>';
-  for(i=0;i<tile.sideA;i++)   s+='<rect '+R(oCX,oTY+i*ROW_W,c.copOL,ROW_W)+' fill="'+TC[i%5]+'" opacity=".92"/>';
-  for(i=0;i<tile.sideB;i++)   s+='<rect '+R(oCX,oTY+c.tA+c.copOW+i*ROW_W,c.copOL,ROW_W)+' fill="'+TC[i%5]+'" opacity=".92"/>';
-  s+='<rect '+R(oCX,oCY,c.copOL,c.copOW)+' fill="url(#cop)" filter="url(#sh)"/>';
-  s+='<rect '+R(oCX,oCY,c.copOL,c.copOW)+' fill="none" stroke="#9a8060" stroke-width="1"/>';
-  s+='<rect '+R(oPX,oPY,poolL,poolW)+' fill="url(#wat)"/>';
-  s+='<rect '+R(oPX,oPY,poolL,poolW)+' fill="none" stroke="#48a8e0" stroke-width="1.5"/>';
-  if(tile.deep+tile.shallow+tile.sideA+tile.sideB>0)
-    s+='<rect '+R(oTX,oTY,c.tileOL,c.tileOW)+' fill="none" stroke="#3888e0" stroke-width="1" stroke-dasharray="5 3" opacity=".45"/>';
-  if(c.hasConc)
-    s+='<rect '+R(0,0,outerL,outerW)+' fill="none" stroke="#886040" stroke-width="1" stroke-dasharray="5 3" opacity=".45"/>';
-  var pw=poolL*sc;
-  if(pw>50){
-    s+='<text x="'+CX(oPX,poolL)+'" y="'+f2(oy+oPY*sc+poolW*sc/2-8)+'" text-anchor="middle" fill="#fff" font-size="'+fs(pw/5.5)+'" font-weight="700" font-family="monospace" opacity=".9">POOL WATERLINE</text>';
-    s+='<text x="'+CX(oPX,poolL)+'" y="'+f2(oy+oPY*sc+poolW*sc/2+10)+'" text-anchor="middle" fill="#9dd0f5" font-size="'+fs(pw/7.5)+'" font-family="monospace" opacity=".7">'+poolL+'m x '+poolW+'m</text>';
+  /* all coordinate helpers return numbers — no string arithmetic */
+  var W=900,H=380,PAD=36;
+  var oL=c.concOL,oW=c.concOW;
+  var sc=Math.min((W-PAD*2)/oL,(H-PAD*2)/oW);
+  var ox=(W-oL*sc)/2, oy=(H-oW*sc)/2;
+  var pL=S.poolL,pW=S.poolW,cW=S.copingW;
+
+  function sx(v){return ox+v*sc;}
+  function sy(v){return oy+v*sc;}
+  function sw(v){return v*sc;}
+  function cx(x,w){return sx(x)+sw(w)/2;}
+  function cy(y,h){return sy(y)+sw(h)/2;}
+  function rct(x,y,w,h,a){return '<rect x="'+f2(sx(x))+'" y="'+f2(sy(y))+'" width="'+f2(sw(w))+'" height="'+f2(sw(h))+'" '+(a||'')+'/>';}
+  function lbl(x,y,t,a){return '<text x="'+f2(x)+'" y="'+f2(y)+'" '+(a||'')+'>'+t+'</text>';}
+
+  var oCX=c.cD+c.tD, oCY=c.cA+c.tA;
+  var oPX=oCX+cW,    oPY=oCY+cW;
+  var hasTile=S.tile.deep+S.tile.shallow+S.tile.sideA+S.tile.sideB>0;
+  var s='';
+
+  /* zone fills */
+  if(c.hasConc) s+=rct(0,0,oL,oW,'fill="#1c0b03" rx="5"');
+  if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="#061830"');
+  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="#7a9eb8"');
+  s+=rct(oPX,oPY,pL,pW,'fill="url(#wat)"');
+
+  /* zone borders */
+  if(c.hasConc) s+=rct(0,0,oL,oW,'fill="none" stroke="rgba(190,120,50,.4)" stroke-width="1.5" rx="5"');
+  if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="none" stroke="rgba(0,130,255,.35)" stroke-width="1.5"');
+  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="none" stroke="rgba(140,190,220,.35)" stroke-width="1"');
+  s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="rgba(0,180,255,.6)" stroke-width="1.5"');
+
+  /* pool centre label + deep/shallow end labels */
+  var ph=sw(pW), pw2=sw(pL);
+  var FA='text-anchor="middle" font-family="Inter,sans-serif"';
+  if(pw2>60&&ph>28){
+    s+=lbl(cx(oPX,pL), sy(oPY)+ph/2-8,'POOL',FA+' fill="rgba(255,255,255,.88)" font-size="13" font-weight="700"');
+    s+=lbl(cx(oPX,pL), sy(oPY)+ph/2+11,pL+'m × '+pW+'m',FA+' fill="rgba(140,215,255,.75)" font-size="11"');
   }
-  s+='<text x="'+f2(ox+oCX*sc+7)+'" y="'+f2(oy+oCY*sc+13)+'" fill="#7a6040" font-size="9" font-family="monospace" font-weight="700">COPING - INCL.</text>';
-  function lbl(show,x,y,t,rot,col){
-    if(!show)return"";
-    return'<text x="'+x+'" y="'+y+'" text-anchor="middle" fill="'+(col||"#fff")+'" font-size="10" font-family="monospace" font-weight="700" opacity=".9"'+(rot?' transform="rotate(-90,'+x+','+y+')"':"")+'>'+t+'</text>';
+  var END='font-family="Inter,sans-serif" font-size="8.5" font-weight="700" letter-spacing=".14em" fill="rgba(120,195,255,.42)"';
+  if(pw2>100&&ph>32){
+    s+=lbl(sx(oPX)+9,   sy(oPY)+ph/2+4, 'DEEP END',    END+' text-anchor="start"');
+    s+=lbl(sx(oPX+pL)-9,sy(oPY)+ph/2+4, 'SHALLOW END', END+' text-anchor="end"');
   }
-  s+=lbl(tile.deep>0,   CX(oTX,c.tD),                    CY(oTY,c.tileOW),          "DEEP . "+tile.deep+"R",   true);
-  s+=lbl(tile.shallow>0,CX(oTX+c.tD+c.copOL,c.tS),       CY(oTY,c.tileOW),          "SHAL . "+tile.shallow+"R",true);
-  s+=lbl(tile.sideA>0,  CX(oCX,c.copOL),                  CY(oTY,c.tA),              "SIDE A . "+tile.sideA+"R");
-  s+=lbl(tile.sideB>0,  CX(oCX,c.copOL),                  CY(oTY+c.tA+c.copOW,c.tB),"SIDE B . "+tile.sideB+"R");
-  s+=lbl(conc.deep>0,   CX(0,c.cD),                       CY(0,outerW),              "C-DEEP . "+conc.deep+"R", true,"#d0c0b0");
-  s+=lbl(conc.shallow>0,CX(c.cD+c.tileOL,c.cS),           CY(0,outerW),              "C-SHAL . "+conc.shallow+"R",true,"#d0c0b0");
-  s+=lbl(conc.sideA>0,  CX(c.cD,c.tileOL),                CY(0,c.cA),                "C-SIDE A . "+conc.sideA+"R",false,"#d0c0b0");
-  s+=lbl(conc.sideB>0,  CX(c.cD,c.tileOL),                CY(c.cA+c.tileOW,c.cB),   "C-SIDE B . "+conc.sideB+"R",false,"#d0c0b0");
-  var leg=[["#c2b28a","Coping (incl.)"],["#2080e0","Tile $470/m2"],["#7a5448","Concrete $220/m2"],["#1a5a8a","Waterline"]];
-  for(i=0;i<leg.length;i++){
-    s+='<g transform="translate('+(W-155)+','+(H-78+i*18)+')">';
-    s+='<rect width="11" height="11" rx="2" fill="'+leg[i][0]+'"/>';
-    s+='<text x="16" y="10" fill="#5e84a2" font-size="10" font-family="monospace">'+leg[i][1]+'</text></g>';
+
+  /* zone labels — only show when band is wide enough */
+  var LBL='font-size="10" font-weight="700" font-family="Inter,sans-serif" text-anchor="middle"';
+  function zoneLbl(show,bandPx,x,y,text,fill,rot){
+    if(!show||bandPx<18) return'';
+    var base=lbl(x,y+4,text,LBL+' fill="'+fill+'"'+(rot?' transform="rotate(-90,'+f2(x)+','+f2(y)+')""':''));
+    return base;
   }
+  /* tile bands */
+  s+=zoneLbl(c.tD>0,sw(c.tD), cx(c.cD,c.tD),         cy(c.cA,c.tileOW), rLbl(S.tile.deep),    '#6ac8ff',true);
+  s+=zoneLbl(c.tS>0,sw(c.tS), cx(c.cD+c.tD+c.copOL,c.tS),cy(c.cA,c.tileOW),rLbl(S.tile.shallow),'#6ac8ff',true);
+  s+=zoneLbl(c.tA>0,sw(c.tA), cx(oCX,c.copOL),        cy(c.cA,c.tA),     rLbl(S.tile.sideA),   '#6ac8ff',false);
+  s+=zoneLbl(c.tB>0,sw(c.tB), cx(oCX,c.copOL),        cy(c.cA+c.tA+c.copOW,c.tB),rLbl(S.tile.sideB),'#6ac8ff',false);
+  /* concrete bands */
+  s+=zoneLbl(c.cD>0,sw(c.cD), cx(0,c.cD),             cy(0,oW),          rLbl(S.conc.deep),    '#d4a060',true);
+  s+=zoneLbl(c.cS>0,sw(c.cS), cx(c.cD+c.tileOL,c.cS), cy(0,oW),          rLbl(S.conc.shallow), '#d4a060',true);
+  s+=zoneLbl(c.cA>0,sw(c.cA), cx(c.cD,c.tileOL),      cy(0,c.cA),        rLbl(S.conc.sideA),   '#d4a060',false);
+  s+=zoneLbl(c.cB>0,sw(c.cB), cx(c.cD,c.tileOL),      cy(c.cA+c.tileOW,c.cB),rLbl(S.conc.sideB),'#d4a060',false);
+
   return '<svg class="pool" viewBox="0 0 '+W+' '+H+'">'
     +'<defs>'
-    +'<pattern id="wat" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(30)">'
-    +'<rect width="20" height="20" fill="#194e80"/>'
-    +'<line x1="0" y1="10" x2="20" y2="10" stroke="#2878c0" stroke-width="1.5" opacity=".4"/>'
+    +'<linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="#0c4282"/><stop offset="100%" stop-color="#072a58"/>'
+    +'</linearGradient>'
+    +'<pattern id="wat" patternUnits="userSpaceOnUse" width="44" height="22">'
+    +'<rect width="44" height="22" fill="url(#wg)"/>'
+    +'<path d="M0 11 Q11 5 22 11 Q33 17 44 11" fill="none" stroke="rgba(0,140,220,.25)" stroke-width="1.2"/>'
     +'</pattern>'
-    +'<pattern id="cop" patternUnits="userSpaceOnUse" width="12" height="12">'
-    +'<rect width="12" height="12" fill="#c2b28a"/>'
-    +'<rect width="6" height="6" fill="#a08a60" opacity=".3"/>'
-    +'<rect x="6" y="6" width="6" height="6" fill="#a08a60" opacity=".3"/>'
-    +'</pattern>'
-    +'<pattern id="dg" patternUnits="userSpaceOnUse" width="22" height="22">'
-    +'<circle cx="1" cy="1" r=".7" fill="#101e2c"/>'
-    +'</pattern>'
-    +'<filter id="sh" x="-5%" y="-5%" width="110%" height="110%">'
-    +'<feDropShadow dx="0" dy="1" stdDeviation="3" flood-opacity=".3"/>'
-    +'</filter>'
     +'</defs>'
-    +'<rect width="'+W+'" height="'+H+'" fill="#07111b" rx="10"/>'
-    +'<rect width="'+W+'" height="'+H+'" fill="url(#dg)" rx="10" opacity=".6"/>'
+    +'<rect width="'+W+'" height="'+H+'" fill="#040a12"/>'
     +s+'</svg>';
 }
 
+/* ── HTML helpers ── */
 function spinH(path){
-  var parts=path.split(".");
-  var v=S;
-  for(var i=0;i<parts.length;i++)v=v[parts[i]];
-  return '<div class="spin">'
-    +'<button class="sb" data-bump="'+path+':-1">&#8722;</button>'
-    +'<div class="sv">'+v+'</div>'
-    +'<button class="sb" data-bump="'+path+':1">+</button>'
-    +'</div>';
+  var v=S,parts=path.split('.');
+  for(var i=0;i<parts.length;i++) v=v[parts[i]];
+  return '<div class="spin"><button class="sb" data-bump="'+path+':-0.5">&#8722;</button><div class="sv">'+v+'</div><button class="sb" data-bump="'+path+':0.5">+</button></div>';
 }
-function fld(label,inner,hint){
-  return '<div class="f"><div class="fl">'+label+'</div>'+inner+(hint?'<div class="fh">'+hint+'</div>':'')+'</div>';
-}
+function fld(lbl,inner,hint){return '<div class="f"><div class="fl">'+lbl+'</div>'+inner+(hint?'<div class="fh">'+hint+'</div>':'')+'</div>';}
+function sh(left,right){return '<div class="sh"><div class="sh-l"><div class="sh-bar"></div>'+left+'</div>'+(right||'')+'</div>';}
 function statCell(label,val,unit,sub,cls){
-  return '<div class="sc"><div class="scl">'+label+'</div>'
-    +'<div class="scv '+(cls||'')+'">'+''+val+'<span class="u">'+unit+'</span></div>'
-    +(sub?'<div class="scs">'+sub+'</div>':'')+'</div>';
+  return '<div class="sc"><div class="scl">'+label+'</div><div class="scv '+(cls||'')+'">'+val+'<span class="u">'+unit+'</span></div>'+(sub?'<div class="scs">'+sub+'</div>':'')+'</div>';
 }
 function miniCell(label,rows,area,cls){
-  return '<div class="mc"><div class="mcl">'+label+'</div>'
-    +'<div class="mcv '+(cls||'')+'">'+''+rows+'<span class="u">rows</span></div>'
-    +'<div class="mcs">'+f2(area)+' m2</div>'
-    +'<div class="mco">'+(rows*400)+'mm out</div></div>';
+  return '<div class="mc"><div class="mcl">'+label+'</div><div class="mcv '+(cls||'')+'">'+rows+'<span class="u">'+rLbl(rows).toLowerCase().replace(rows+'','').trim()+'</span></div><div class="mcs">'+f2(area)+' m²</div><div class="mco">'+(rows*400)+'mm out</div></div>';
 }
 function tog(label,sub,on,key){
-  return '<div class="tog'+(on?' on':'')+(key.indexOf(' off')>=0?' off':'')+'" data-tog="'+key.replace(' off','')+'"><div class="tt">'+label+'</div><div class="ts">'+sub+'</div></div>';
+  var off=key.indexOf(' off')>=0;
+  return '<div class="tog'+(on?' on':'')+(off?' off':'')+'" data-tog="'+key.replace(' off','')+'">'
+    +'<div class="tog-dot"></div>'
+    +'<div class="tog-body"><div class="tog-title">'+label+'</div><div class="tog-sub">'+sub+'</div></div>'
+    +'</div>';
 }
-function qItem(label,detail,val,style){
-  return '<div class="qi" style="'+(style||'')+'"><div class="qil">'+label+'</div><div class="qid">'+detail+'</div><div class="qiv">'+val+'</div></div>';
+function qItem(label,detail,val,col){
+  return '<div class="qi"'+(col?' style="color:'+col+'"':'')+'>'
+    +'<div class="qil">'+label+'</div><div class="qid">'+detail+'</div><div class="qiv">'+val+'</div></div>';
 }
-var ICO_PRINT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>';
-var ICO_SAVE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
-var ICO_PLUS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-var ICO_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
-var ICO_OPEN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+
+var ICO_P='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>';
+var ICO_S='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+var ICO_N='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+var ICO_O='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
 
 function render(){
   var c=calc();
   var items=[];
-  items.push(qItem("Additional Tile",f2(c.tileArea)+" m2 x $"+RATES.tile,"$"+aud(c.tileCharge)));
-  if(c.hasConc)        items.push(qItem("Plain Concrete",f2(c.concArea)+" m2 x $"+RATES.conc,"$"+aud(c.concCharge),"color:#b08860"));
-  if(c.hasConc&&S.sep) items.push(qItem("Separate Pour","One-off flat fee","$"+aud(c.pourFee),"color:var(--warn)"));
-  if(S.pump)           items.push(qItem("Concrete Pump","One-off flat fee","$"+aud(c.pumpFee),"color:var(--warn)"));
-  var itemCols="repeat("+items.length+",1fr)";
-  var totalParts=["Tile $"+aud(c.tileCharge)];
-  if(c.hasConc)        totalParts.push("+ Concrete $"+aud(c.concCharge));
-  if(c.hasConc&&S.sep) totalParts.push("+ Pour $"+aud(c.pourFee));
-  if(S.pump)           totalParts.push("+ Pump $"+aud(c.pumpFee));
-  var html="";
-  html+='<div class="topbar">';
-  html+='<div class="logo"><div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M3 18s2-3 5-3 6 4 9 4 5-3 5-3V6s-2 3-5 3-6-4-9-4-5 3-5 3z"/></svg></div>';
-  html+='<div><div class="brand-eye">Paradise Pools Australia</div><div class="brand-name">Tile &amp; Concrete Calculator</div></div></div>';
-  html+='<div class="topbar-btns no-print"><button class="btn" data-action="print">'+ICO_PRINT+' Print / PDF</button><button class="btn btn-primary" data-action="save">'+ICO_SAVE+' Save Quote</button></div></div>';
-  html+='<div class="panel no-print"><div class="savebar"><span class="save-tag">Quote File</span>';
-  html+='<button class="btn btn-primary" data-action="save">'+ICO_SAVE+' Save .json</button>';
-  html+='<label class="btn" style="cursor:pointer">'+ICO_OPEN+' Load .json<input type="file" accept=".json" id="fileInput" style="display:none"></label>';
-  html+='<button class="btn" data-action="new">'+ICO_PLUS+' New Quote</button>';
-  html+='<span class="save-ct">Save to keep your quote - load it back anytime on any device</span></div></div>';
-  html+='<div class="panel"><div class="pb"><div class="sl">Customer &amp; Job Details</div><div class="j4">';
-  html+=fld("Customer",'<input type="text" value="'+S.job.customer+'" data-job="customer" placeholder="e.g. J. Smith">');
-  html+=fld("Site Address",'<input type="text" value="'+S.job.address+'" data-job="address" placeholder="e.g. 12 Pool St, Banyo">');
-  html+=fld("Quote Ref",'<input type="text" value="'+S.job.ref+'" data-job="ref" placeholder="e.g. PP-1042">');
-  html+=fld("Date",'<input type="text" value="'+S.job.date+'" data-job="date">');
-  html+='</div></div></div>';
-  html+='<div class="main-layout"><div class="left-col">';
-  html+='<div class="panel"><div class="pb"><div class="sl">Pool Shell <span class="g">waterline</span></div><div class="g2">';
-  html+=fld("Length (m)",'<input type="number" step="0.1" value="'+S.poolL+'" data-num="poolL">');
-  html+=fld("Width (m)",'<input type="number" step="0.1" value="'+S.poolW+'" data-num="poolW">');
-  html+='</div></div><div class="pb"><div class="sl">Coping <span class="g">included</span></div>';
-  html+=fld("Width (m)",'<input type="number" step="0.05" value="'+S.copingW+'" data-num="copingW">',"All 4 sides on waterline edge");
-  html+='</div></div>';
-  html+='<div class="panel"><div class="pb"><div class="sl">Additional Tile <span class="r">$470 / m2</span></div><div class="g2">';
-  html+=fld("Deep End",spinH("tile.deep"),"rows x 400mm");
-  html+=fld("Shallow End",spinH("tile.shallow"),"rows x 400mm");
-  html+=fld("Side A",spinH("tile.sideA"),"rows x 400mm");
-  html+=fld("Side B",spinH("tile.sideB"),"rows x 400mm");
-  html+='</div></div></div>';
-  html+='<div class="panel"><div class="pb"><div class="sl">Plain Concrete <span class="r">$220 / m2</span></div><div class="g2">';
-  html+=fld("Deep End",spinH("conc.deep"),"rows x 400mm");
-  html+=fld("Shallow End",spinH("conc.shallow"),"rows x 400mm");
-  html+=fld("Side A",spinH("conc.sideA"),"rows x 400mm");
-  html+=fld("Side B",spinH("conc.sideB"),"rows x 400mm");
-  html+='</div></div></div>';
-  html+='<div class="panel"><div class="pb"><div class="sl">Pour Height'+(c.hasConc?'':'<span class="w"> add concrete rows</span>')+'</div>';
-  html+=tog("Same height as coping","Poured together - no extra fee",!S.sep,"sep:false"+(c.hasConc?"":" off"));
-  html+=tog("Different height","Separate pour - $1,200 one-off fee",S.sep,"sep:true"+(c.hasConc?"":" off"));
-  if(!c.hasConc) html+='<p class="fh" style="margin-top:8px">Add concrete rows to enable</p>';
-  html+='</div><div class="pb"><div class="sl">Concrete Pump <span class="r">$1,200 flat</span></div>';
-  html+=tog("No pump required","Direct access - no extra charge",!S.pump,"pump:false");
-  html+=tog("Concrete pump required","One-off flat fee of $1,200",S.pump,"pump:true");
-  html+='</div></div>';
-  html+='</div>';
-  html+='<div class="right-col panel"><div class="diag-head">Pool Diagram - top view</div>'+diagram(c)+'</div>';
-  html+='</div>';
-  html+='<div class="panel"><div class="pb"><div class="sl">Additional Tile Breakdown <span class="r">$470 / m2</span></div>';
-  html+='<div class="sg sg3" style="margin-bottom:10px">';
-  html+=statCell("Pool Waterline",f2(c.watArea),"m2",S.poolL+"m x "+S.poolW+"m","");
-  html+=statCell("Coping (Included)",f2(c.copArea),"m2",f2(c.copOL)+"m x "+f2(c.copOW)+"m outer","co");
-  html+=statCell("Additional Tile",f2(c.tileArea),"m2",f2(c.tileOL)+"m x "+f2(c.tileOW)+"m outer","hi");
-  html+='</div><div class="m4">';
-  html+=miniCell("Deep End",S.tile.deep,c.tileSides.deep,"hi");
-  html+=miniCell("Shallow End",S.tile.shallow,c.tileSides.shallow,"hi");
-  html+=miniCell("Side A",S.tile.sideA,c.tileSides.sideA,"hi");
-  html+=miniCell("Side B",S.tile.sideB,c.tileSides.sideB,"hi");
-  html+='</div></div></div>';
+  items.push(qItem("Additional Tile",f2(c.tileArea)+" m² × $"+RATES.tile+"/m²","$"+aud(c.tileCharge)));
+  if(c.hasConc)        items.push(qItem("Plain Concrete",f2(c.concArea)+" m² × $"+RATES.conc+"/m²","$"+aud(c.concCharge),"var(--conc)"));
+  if(c.hasConc&&S.sep) items.push(qItem("Separate Pour","One-off flat fee","$"+aud(c.pourFee),"var(--warn)"));
+  if(S.pump)           items.push(qItem("Concrete Pump","One-off flat fee","$"+aud(c.pumpFee),"var(--warn)"));
+  var iCols="repeat("+items.length+",1fr)";
+  var tParts=["Tile&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$"+aud(c.tileCharge)];
+  if(c.hasConc)        tParts.push("Concrete&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$"+aud(c.concCharge));
+  if(c.hasConc&&S.sep) tParts.push("Sep. pour&nbsp;&nbsp;&nbsp;&nbsp;$"+aud(c.pourFee));
+  if(S.pump)           tParts.push("Pump&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$"+aud(c.pumpFee));
+  var h="";
+
+  /* ── header ── */
+  h+='<div class="topbar">';
+  h+='<div class="logo">';
+  h+='<img class="logo-img" src="logo.png" alt="Paradise Pools" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+  h+='<div class="logo-fb" style="display:none"><svg viewBox="0 0 24 24"><path d="M3 18s2-3 5-3 6 4 9 4 5-3 5-3V6s-2 3-5 3-6-4-9-4-5 3-5 3z"/></svg></div>';
+  h+='<div class="brand"><div class="brand-sub">Quote Calculator</div><div class="brand-name">Tile &amp; Concrete</div></div></div>';
+  h+='<div class="top-btns no-print"><button class="btn" data-action="print">'+ICO_P+' Print / PDF</button><button class="btn btn-p" data-action="save">'+ICO_S+' Save Quote</button></div></div>';
+
+  /* ── save bar ── */
+  h+='<div class="card no-print"><div class="savebar"><span class="save-label">Quote File</span>';
+  h+='<button class="btn btn-p" data-action="save">'+ICO_S+' Save .json</button>';
+  h+='<label class="btn" style="cursor:pointer">'+ICO_O+' Load .json<input type="file" accept=".json" id="fileInput" style="display:none"></label>';
+  h+='<button class="btn" data-action="new">'+ICO_N+' New Quote</button>';
+  h+='<span class="save-hint">Save to keep your quote — load it back anytime on any device</span></div></div>';
+
+  /* ── job details ── */
+  h+='<div class="card"><div class="pad">'+sh("Customer &amp; Job Details")+'<div class="g4i">';
+  h+=fld("Customer",'<input type="text" value="'+S.job.customer+'" data-job="customer" placeholder="e.g. J. Smith">');
+  h+=fld("Site Address",'<input type="text" value="'+S.job.address+'" data-job="address" placeholder="e.g. 12 Pool St, Banyo">');
+  h+=fld("Quote Ref",'<input type="text" value="'+S.job.ref+'" data-job="ref" placeholder="e.g. PP-1042">');
+  h+=fld("Date",'<input type="text" value="'+S.job.date+'" data-job="date">');
+  h+='</div></div></div>';
+
+  /* ── 3-col: pool+coping | tile | concrete ── */
+  h+='<div class="g3">';
+
+  /* pool shell + coping */
+  h+='<div class="card"><div class="pad">'+sh("Pool Shell",'<span class="sh-g">Waterline</span>')+'<div class="g2i">';
+  h+=fld("Length (m)",'<input type="number" step="0.1" value="'+S.poolL+'" data-num="poolL">');
+  h+=fld("Width (m)",'<input type="number" step="0.1" value="'+S.poolW+'" data-num="poolW">');
+  h+='</div></div><div class="pad">'+sh("Coping",'<span class="sh-g">Included</span>');
+  h+=fld("Width (m)",'<input type="number" step="0.05" value="'+S.copingW+'" data-num="copingW">',"All 4 sides on waterline edge");
+  h+='</div></div>';
+
+  /* tile */
+  h+='<div class="card"><div class="pad">'+sh("Additional Tile",'<span class="sh-r">$470 / m²</span>')+'<div class="g2i">';
+  h+=fld("Deep End",spinH("tile.deep"),"rows × 400 mm");
+  h+=fld("Shallow End",spinH("tile.shallow"),"rows × 400 mm");
+  h+=fld("Side A",spinH("tile.sideA"),"rows × 400 mm");
+  h+=fld("Side B",spinH("tile.sideB"),"rows × 400 mm");
+  h+='</div></div></div>';
+
+  /* concrete */
+  h+='<div class="card"><div class="pad">'+sh("Plain Concrete",'<span class="sh-r">$220 / m²</span>')+'<div class="g2i">';
+  h+=fld("Deep End",spinH("conc.deep"),"rows × 400 mm");
+  h+=fld("Shallow End",spinH("conc.shallow"),"rows × 400 mm");
+  h+=fld("Side A",spinH("conc.sideA"),"rows × 400 mm");
+  h+=fld("Side B",spinH("conc.sideB"),"rows × 400 mm");
+  h+='</div></div></div>';
+
+  h+='</div>'; /* end g3 */
+
+  /* ── full-width diagram ── */
+  h+='<div class="card"><div class="pad diag-wrap"><div class="diag-head">Pool Layout — Top View</div>'+diagram(c)+'</div>';
+  /* legend below diagram */
+  h+='<div class="diag-legend">';
+  h+='<div class="leg-item"><div class="leg-swatch" style="background:#7a9eb8"></div>Coping (included)</div>';
+  h+='<div class="leg-item"><div class="leg-swatch" style="background:#1258a8"></div>Tile — $470/m²</div>';
+  if(c.hasConc) h+='<div class="leg-item"><div class="leg-swatch" style="background:#1c0b03"></div>Concrete — $220/m²</div>';
+  h+='</div></div>';
+
+  /* ── 2-col: pour height | pump ── */
+  h+='<div class="g2">';
+
+  h+='<div class="card"><div class="pad">'+sh("Pour Height",'<span class="sh-r">$1,200 flat</span>');
+  h+=tog("Same height as coping","Poured together — no extra fee",!S.sep,"sep:false"+(c.hasConc?"":" off"));
+  h+=tog("Different height","Separate pour — $1,200 one-off fee",S.sep,"sep:true"+(c.hasConc?"":" off"));
+  if(!c.hasConc) h+='<p class="fh" style="margin-top:9px">Add concrete rows above to enable</p>';
+  h+='</div></div>';
+
+  h+='<div class="card"><div class="pad">'+sh("Concrete Pump",'<span class="sh-r">$1,200 flat</span>');
+  h+=tog("No pump required","Direct access — no extra charge",!S.pump,"pump:false");
+  h+=tog("Concrete pump required","One-off flat fee of $1,200",S.pump,"pump:true");
+  h+='</div></div>';
+
+  h+='</div>'; /* end g2 */
+
+  /* ── tile breakdown ── */
+  h+='<div class="card"><div class="pad">'+sh("Additional Tile Breakdown",'<span class="sh-r">$470 / m²</span>');
+  h+='<div class="sg sg3">';
+  h+=statCell("Pool Waterline",f2(c.watArea),"m²",S.poolL+"m × "+S.poolW+"m","");
+  h+=statCell("Coping (Included)",f2(c.copArea),"m²",f2(c.copOL)+"m × "+f2(c.copOW)+"m outer","co");
+  h+=statCell("Additional Tile",f2(c.tileArea),"m²",f2(c.tileOL)+"m × "+f2(c.tileOW)+"m outer","hi");
+  h+='</div><div class="m4">';
+  h+=miniCell("Deep End",S.tile.deep,c.tSides.deep,"hi");
+  h+=miniCell("Shallow End",S.tile.shallow,c.tSides.shallow,"hi");
+  h+=miniCell("Side A",S.tile.sideA,c.tSides.sideA,"hi");
+  h+=miniCell("Side B",S.tile.sideB,c.tSides.sideB,"hi");
+  h+='</div></div></div>';
+
+  /* ── concrete breakdown ── */
   if(c.hasConc){
-    html+='<div class="panel"><div class="pb"><div class="sl">Plain Concrete Breakdown <span class="r">$220 / m2'+(S.sep?' + $1,200 pour':'')+'</span></div>';
-    html+='<div class="sg sg3" style="margin-bottom:10px">';
-    html+=statCell("Tile Zone",f2(c.tileOL*c.tileOW),"m2",f2(c.tileOL)+"m x "+f2(c.tileOW)+"m","");
-    html+=statCell("Concrete Area",f2(c.concArea),"m2",f2(c.concOL)+"m x "+f2(c.concOW)+"m outer","cn");
-    html+=(S.sep?statCell("Separate Pour","$1,200","","One-off flat charge","wn"):statCell("Pour Fee","$0","","Same height - no charge",""));
-    html+='</div><div class="m4">';
-    html+=miniCell("Deep End",S.conc.deep,c.concSides.deep,"cn");
-    html+=miniCell("Shallow End",S.conc.shallow,c.concSides.shallow,"cn");
-    html+=miniCell("Side A",S.conc.sideA,c.concSides.sideA,"cn");
-    html+=miniCell("Side B",S.conc.sideB,c.concSides.sideB,"cn");
-    html+='</div></div></div>';
+    h+='<div class="card"><div class="pad">'+sh("Plain Concrete Breakdown",'<span class="sh-r">$220 / m²'+(S.sep?' + $1,200 pour':'')+'</span>');
+    h+='<div class="sg sg3">';
+    h+=statCell("Tile Zone",f2(c.tileOL*c.tileOW),"m²",f2(c.tileOL)+"m × "+f2(c.tileOW)+"m","");
+    h+=statCell("Concrete Area",f2(c.concArea),"m²",f2(c.concOL)+"m × "+f2(c.concOW)+"m outer","cn");
+    h+=S.sep?statCell("Separate Pour","$1,200","","One-off flat charge","wn"):statCell("Pour Fee","$0","","Same height — no charge","");
+    h+='</div><div class="m4">';
+    h+=miniCell("Deep End",S.conc.deep,c.cSides.deep,"cn");
+    h+=miniCell("Shallow End",S.conc.shallow,c.cSides.shallow,"cn");
+    h+=miniCell("Side A",S.conc.sideA,c.cSides.sideA,"cn");
+    h+=miniCell("Side B",S.conc.sideB,c.cSides.sideB,"cn");
+    h+='</div></div></div>';
   }
-  html+='<div class="panel"><div class="pb"><div class="sl">Quote Summary <span class="g">all prices inc. GST</span></div>';
-  html+='<div class="qs-items" style="grid-template-columns:'+itemCols+'">'+items.join('')+'</div>';
-  html+='<div class="qs-total"><div><div class="qt-label">Total (inc. GST)</div><div class="qt-detail">'+totalParts.join("  ")+'</div></div>';
-  html+='<div class="qt-val">$'+aud(c.total)+'</div></div></div></div>';
-  html+='<div class="panel"><div class="pb" style="padding-bottom:0"><div class="sl">Formula Trace</div></div><div class="trace">';
-  html+='Waterline: <b>'+S.poolL+' x '+S.poolW+' = '+f2(c.watArea)+' m2</b><br>';
-  html+='Coping outer: <b>'+f2(c.copOL)+' x '+f2(c.copOW)+'</b> = coping area <b>'+f2(c.copArea)+' m2</b><br>';
-  html+='Tile outer: <b>'+f2(c.tileOL)+' x '+f2(c.tileOW)+' = '+f2(c.tileOL*c.tileOW)+' m2</b><br>';
-  html+='<span class="th">Tile area: '+f2(c.tileOL*c.tileOW)+' - '+f2(c.copOL*c.copOW)+' = '+f2(c.tileArea)+' m2 x $'+RATES.tile+' = $'+aud(c.tileCharge)+'</span>';
-  if(c.hasConc) html+='<br>Concrete outer: <b>'+f2(c.concOL)+' x '+f2(c.concOW)+' = '+f2(c.concOL*c.concOW)+' m2</b><br>'
-    +'<span class="tc">Concrete: '+f2(c.concOL*c.concOW)+' - '+f2(c.tileOL*c.tileOW)+' = '+f2(c.concArea)+' m2 x $'+RATES.conc+' = $'+aud(c.concCharge)+'</span>';
-  if(c.hasConc&&S.sep) html+='<br><span class="tw">Separate pour: $1,200.00 (one-off)</span>';
-  if(S.pump) html+='<br><span class="tw">Concrete pump: $1,200.00 (one-off)</span>';
-  html+='<br><span class="th" style="font-size:13px">TOTAL (inc. GST): $'+aud(c.total)+'</span></div></div>';
-  html+='<div class="no-print" style="text-align:center;color:var(--dim);font-size:10px;padding:4px 0">Save as .json to keep quotes - load back anytime - Print / Save as PDF to send to client</div>';
-  document.getElementById("app").innerHTML=html;
+
+  /* ── quote summary ── */
+  h+='<div class="card"><div class="pad">'+sh("Quote Summary",'<span class="sh-g">All prices inc. GST</span>');
+  h+='<div class="qs-items" style="grid-template-columns:'+iCols+'">'+items.join('')+'</div>';
+  h+='<div class="qs-total"><div><div class="qt-label">Total (inc. GST)</div><div class="qt-detail">'+tParts.join("<br>")+'</div></div>';
+  h+='<div class="qt-val">$'+aud(c.total)+'</div></div></div></div>';
+
+  /* ── formula trace ── */
+  h+='<div class="card"><div class="pad" style="padding-bottom:0">'+sh("Formula Trace")+'</div><div class="trace">';
+  h+='Waterline: <b>'+S.poolL+' × '+S.poolW+' = '+f2(c.watArea)+' m²</b><br>';
+  h+='Coping outer: <b>'+f2(c.copOL)+' × '+f2(c.copOW)+'</b> → coping area <b>'+f2(c.copArea)+' m²</b><br>';
+  h+='Tile outer: <b>'+f2(c.tileOL)+' × '+f2(c.tileOW)+' = '+f2(c.tileOL*c.tileOW)+' m²</b><br>';
+  h+='<span class="th">Tile area: '+f2(c.tileOL*c.tileOW)+' − '+f2(c.copOL*c.copOW)+' = '+f2(c.tileArea)+' m² × $'+RATES.tile+' = $'+aud(c.tileCharge)+'</span>';
+  if(c.hasConc) h+='<br>Concrete outer: <b>'+f2(c.concOL)+' × '+f2(c.concOW)+' = '+f2(c.concOL*c.concOW)+' m²</b><br>'
+    +'<span class="tc">Concrete: '+f2(c.concOL*c.concOW)+' − '+f2(c.tileOL*c.tileOW)+' = '+f2(c.concArea)+' m² × $'+RATES.conc+' = $'+aud(c.concCharge)+'</span>';
+  if(c.hasConc&&S.sep) h+='<br><span class="tw">Separate pour: $1,200.00 (one-off)</span>';
+  if(S.pump) h+='<br><span class="tw">Concrete pump: $1,200.00 (one-off)</span>';
+  h+='<br><span class="th" style="font-size:13px">TOTAL (inc. GST):  $'+aud(c.total)+'</span></div></div>';
+
+  h+='<div class="no-print" style="text-align:center;color:var(--tx3);font-size:10px;padding:4px 0;letter-spacing:.04em">Save as .json · Load back anytime · Print or Save as PDF to share with client</div>';
+  document.getElementById("app").innerHTML=h;
 }
 
+/* ── events ── */
 document.addEventListener("click",function(e){
-  var sb=e.target.closest("[data-bump]");
-  if(sb){
-    var parts=sb.dataset.bump.split(":");
-    var path=parts[0],d=parseInt(parts[1]);
-    var ks=path.split(".");
-    var o=S;
-    for(var i=0;i<ks.length-1;i++)o=o[ks[i]];
-    var last=ks[ks.length-1];
-    o[last]=Math.max(0,Math.min(10,o[last]+d));
+  var bump=e.target.closest("[data-bump]");
+  if(bump){
+    var p=bump.dataset.bump.split(":"),path=p[0],d=parseFloat(p[1]);
+    var ks=path.split("."),o=S;
+    for(var i=0;i<ks.length-1;i++) o=o[ks[i]];
+    o[ks[ks.length-1]]=Math.round(Math.max(0,Math.min(10,o[ks[ks.length-1]]+d))*10)/10;
     render();return;
   }
   var tg=e.target.closest("[data-tog]");
@@ -430,58 +562,46 @@ document.addEventListener("click",function(e){
   var ab=e.target.closest("[data-action]");
   if(ab){
     var a=ab.dataset.action;
-    if(a==="print")window.print();
-    else if(a==="save")saveQuote();
-    else if(a==="new")newQuote();
+    if(a==="print") window.print();
+    else if(a==="save") saveQuote();
+    else if(a==="new") newQuote();
   }
 });
 
-document.addEventListener("change",function(e){
-  if(e.target.id==="fileInput"&&e.target.files&&e.target.files[0]){
-    loadQuoteFromFile(e.target.files[0]);
-  }
-});
-
+/* number inputs: update S on keystroke but only re-render on blur/enter */
 document.addEventListener("input",function(e){
+  if(e.target.dataset.num) S[e.target.dataset.num]=parseFloat(e.target.value)||0;
+  else if(e.target.dataset.job) S.job[e.target.dataset.job]=e.target.value;
+});
+document.addEventListener("change",function(e){
   if(e.target.dataset.num){S[e.target.dataset.num]=parseFloat(e.target.value)||0;render();}
-  else if(e.target.dataset.job){S.job[e.target.dataset.job]=e.target.value;}
+  if(e.target.id==="fileInput"&&e.target.files&&e.target.files[0]) loadQuote(e.target.files[0]);
 });
 
 function saveQuote(){
   var name=S.job.ref||S.job.customer||("Quote-"+new Date().toLocaleDateString("en-AU").replace(/\//g,"-"));
-  var data=JSON.stringify(S,null,2);
-  var blob=new Blob([data],{type:"application/json"});
-  var url=URL.createObjectURL(blob);
   var a=document.createElement("a");
-  a.href=url;
-  a.download=name+".json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:"application/json"}));
+  a.download=name+".json";document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
-function loadQuoteFromFile(file){
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var data=JSON.parse(e.target.result);
-      if(data&&data.poolL){S=data;render();alert("Loaded: "+file.name);}
-      else{alert("Invalid quote file.");}
-    }catch(x){alert("Could not read file.");}
+function loadQuote(file){
+  var r=new FileReader();
+  r.onload=function(e){
+    try{var d=JSON.parse(e.target.result);if(d&&d.poolL){S=d;render();}else alert("Invalid file.");}
+    catch(x){alert("Could not read file.");}
   };
-  reader.readAsText(file);
+  r.readAsText(file);
 }
 function newQuote(){
   if(!confirm("Start a new quote? Unsaved changes will be lost."))return;
   S={job:{customer:"",address:"",ref:"",date:new Date().toISOString().slice(0,10)},
     poolL:7.3,poolW:3.6,copingW:0.4,
     tile:{deep:1,shallow:4,sideA:1,sideB:1},
-    conc:{deep:0,shallow:0,sideA:0,sideB:0},
-    sep:false,pump:false};
+    conc:{deep:0,shallow:0,sideA:0,sideB:0},sep:false,pump:false};
   render();
 }
 render();
-<\/script>
+</script>
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function() {
