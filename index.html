@@ -364,23 +364,50 @@ function diagram(c){
   (function(){
     var benchDepth = pW*0.22;      /* how far the bench extends up from Side B */
     var stepDepth  = pL*0.10;      /* how far the shallow-end step extends in from the shallow wall */
-    var riser='#000818', riserOp='0.4';
+    var wash='#eafcff';
 
-    /* 1. Bench along Side B — full length of the pool, along the bottom wall */
-    s+=rct(oPX,oPY+pW-benchDepth, pL, benchDepth, 'fill="#cceaf4" opacity="0.5"');
-    s+=rct(oPX,oPY+pW-benchDepth, pL, Math.max(0.4/sc,0.015), 'fill="'+riser+'" opacity="'+riserOp+'"');
+    /* Soft lightening wash — lets the gradient + sparkle underneath keep showing through,
+       instead of a flat opaque slab sitting on top of the water. */
+    s+='<g clip-path="url(#waterClip)">';
+    s+=rct(oPX,oPY+pW-benchDepth, pL, benchDepth, 'fill="'+wash+'" opacity="0.16"');
+    s+=rct(oPX+pL-stepDepth, oPY, stepDepth, pW, 'fill="'+wash+'" opacity="0.16"');
 
-    /* 2. Shallow-end step — full height of the pool, along the right (shallow) wall */
-    s+=rct(oPX+pL-stepDepth, oPY, stepDepth, pW, 'fill="#cceaf4" opacity="0.5"');
-    s+=rct(oPX+pL-stepDepth, oPY, Math.max(0.4/sc,0.015), pW, 'fill="'+riser+'" opacity="'+riserOp+'"');
+    /* extra sparkle dots over the shallower zones so the texture reads as continuous
+       water, not a separate flat panel dropped on top */
+    (function(){
+      var rnd2=seededRand(19);
+      var benchArea=pL*benchDepth, stepArea=stepDepth*pW;
+      var n1=Math.min(90,Math.round(benchArea*2.4)), n2=Math.min(60,Math.round(stepArea*2.4));
+      var extra='';
+      for(var i=0;i<n1;i++){
+        var rx=oPX+rnd2()*pL, ry=oPY+pW-benchDepth+rnd2()*benchDepth;
+        var r=(0.03+rnd2()*0.07)*sc, op=(0.08+rnd2()*0.16).toFixed(2);
+        extra+='<circle cx="'+f2(sx(rx))+'" cy="'+f2(sy(ry))+'" r="'+f2(r)+'" fill="#f4feff" opacity="'+op+'"/>';
+      }
+      for(var i=0;i<n2;i++){
+        var rx=oPX+pL-stepDepth+rnd2()*stepDepth, ry=oPY+rnd2()*pW;
+        var r=(0.03+rnd2()*0.07)*sc, op=(0.08+rnd2()*0.16).toFixed(2);
+        extra+='<circle cx="'+f2(sx(rx))+'" cy="'+f2(sy(ry))+'" r="'+f2(r)+'" fill="#f4feff" opacity="'+op+'"/>';
+      }
+      s+=extra;
+    })();
+    s+='</g>';
 
-    /* 3. Small 45° corner step — sits ON TOP of the bench, in the Side B / shallow-end corner */
+    /* subtle step edges — a soft shadow + thin highlight pair, not a hard ruled line */
+    function stepEdge(x1,y1,x2,y2){
+      s+='<line x1="'+f2(sx(x1))+'" y1="'+f2(sy(y1))+'" x2="'+f2(sx(x2))+'" y2="'+f2(sy(y2))+'" stroke="#04202e" stroke-opacity="0.22" stroke-width="2"/>';
+      s+='<line x1="'+f2(sx(x1))+'" y1="'+f2(sy(y1)-0.8)+'" x2="'+f2(sx(x2))+'" y2="'+f2(sy(y2)-0.8)+'" stroke="#eafcff" stroke-opacity="0.4" stroke-width="1"/>';
+    }
+    stepEdge(oPX,oPY+pW-benchDepth, oPX+pL,oPY+pW-benchDepth);
+    stepEdge(oPX+pL-stepDepth,oPY, oPX+pL-stepDepth,oPY+pW);
+
+    /* Small 45° corner step — sits on top of the bench, brightest point since it's the shallowest */
     var cx1=oPX+pL, cy1=oPY+pW-benchDepth;   /* corner top point, at bench's inner edge */
     var cx2=oPX+pL-stepDepth, cy2=oPY+pW-benchDepth; /* along the bench's inner edge */
     var cx3=oPX+pL, cy3=oPY+pW;              /* along the shallow wall, at Side B */
-    s+='<path d="M '+f2(sx(cx1))+' '+f2(sy(cy1))+' L '+f2(sx(cx2))+' '+f2(sy(cy2))+' L '+f2(sx(cx3))+' '+f2(sy(cy3))+' Z" fill="#eaf7fb" opacity="0.55"/>';
-    s+='<path d="M '+f2(sx(cx1))+' '+f2(sy(cy1))+' L '+f2(sx(cx2))+' '+f2(sy(cy2))+'" stroke="'+riser+'" stroke-width="1" opacity="'+riserOp+'"/>';
-    s+='<path d="M '+f2(sx(cx2))+' '+f2(sy(cy2))+' L '+f2(sx(cx3))+' '+f2(sy(cy3))+'" stroke="'+riser+'" stroke-width="1" opacity="'+riserOp+'"/>';
+    s+='<g clip-path="url(#waterClip)"><path d="M '+f2(sx(cx1))+' '+f2(sy(cy1))+' L '+f2(sx(cx2))+' '+f2(sy(cy2))+' L '+f2(sx(cx3))+' '+f2(sy(cy3))+' Z" fill="'+wash+'" opacity="0.22"/></g>';
+    s+='<path d="M '+f2(sx(cx1))+' '+f2(sy(cy1))+' L '+f2(sx(cx2))+' '+f2(sy(cy2))+'" stroke="#04202e" stroke-opacity="0.2" stroke-width="1.5"/>';
+    s+='<path d="M '+f2(sx(cx2))+' '+f2(sy(cy2))+' L '+f2(sx(cx3))+' '+f2(sy(cy3))+'" stroke="#04202e" stroke-opacity="0.2" stroke-width="1.5"/>';
   })();
   /* (diagonal sheen removed — was creating an unwanted left-right brightness gradient) */
   /* vignette to deepen the corners of the water */
