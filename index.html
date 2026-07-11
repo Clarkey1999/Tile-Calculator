@@ -303,7 +303,7 @@ function calc(){
 
 function diagram(c){
   /* all coordinate helpers return numbers — no string arithmetic */
-  var W=900,H=420,PAD=40;
+  var W=920,H=440,PAD=42;
   var oL=c.concOL,oW=c.concOW;
   var sc=Math.min((W-PAD*2)/oL,(H-PAD*2)/oW);
   var ox=(W-oL*sc)/2, oy=(H-oW*sc)/2;
@@ -322,33 +322,38 @@ function diagram(c){
   var hasTile=S.tile.deep+S.tile.shallow+S.tile.sideA+S.tile.sideB>0;
   var s='';
 
-  /* ── zone fills, outside-in: concrete → tile → coping → water ── */
-  if(c.hasConc) s+=rct(0,0,oL,oW,'fill="#241008" rx="6"');
-  if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="#071c36" rx="3"');
-  /* coping — richer, more saturated slate-blue so it visually separates from tile/water */
-  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#copg)" rx="2"');
-  s+=rct(oPX,oPY,pL,pW,'fill="url(#wat)"');
+  /* ══ ZONE FILLS — outside-in: concrete → tile → coping (stone) → water ══ */
+  if(c.hasConc) s+=rct(0,0,oL,oW,'fill="#201209" rx="7" filter="url(#dropsh)"');
+  if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="#081d38" rx="4" filter="url(#dropsh)"');
+  /* coping — warm travertine/sandstone tone, real stone feel via layered pattern */
+  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#stoneBase)" rx="3" filter="url(#dropsh)"');
+  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#stoneTex)" rx="3"');
+  /* water — deep multi-stop gradient base */
+  s+=rct(oPX,oPY,pL,pW,'fill="url(#waterDeep)"');
+  /* caustic ripple layers — two offset patterns for real depth, not one squiggle */
+  s+=rct(oPX,oPY,pL,pW,'fill="url(#ripple1)" opacity="0.55"');
+  s+=rct(oPX,oPY,pL,pW,'fill="url(#ripple2)" opacity="0.35"');
+  /* specular light band — soft diagonal sheen like light hitting water */
+  s+=rct(oPX,oPY,pL,pW,'fill="url(#sheen)"');
+  /* vignette to deepen the corners of the water */
+  s+=rct(oPX,oPY,pL,pW,'fill="url(#vignette)"');
 
-  /* ── zone borders — glowing edges to match the rest of the page ── */
-  if(c.hasConc) s+=rct(0,0,oL,oW,'fill="none" stroke="rgba(220,140,60,.5)" stroke-width="1.5" rx="6"');
-  if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="none" stroke="rgba(0,160,255,.45)" stroke-width="1.5" rx="3"');
-  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="none" stroke="rgba(170,210,235,.55)" stroke-width="1.5" rx="2"');
-  s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="rgba(80,200,255,.75)" stroke-width="2"');
-  /* fine inner highlight line on water for extra polish */
-  s+=rct(oPX+1.2,oPY+1.2,Math.max(0,pL-2.4/sc*sc/sc),Math.max(0,pW-2.4/sc*sc/sc),'fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"');
+  /* ══ ZONE BORDERS ══ */
+  if(c.hasConc) s+=rct(0,0,oL,oW,'fill="none" stroke="rgba(224,146,64,.55)" stroke-width="1.5" rx="7"');
+  if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="none" stroke="rgba(0,170,255,.5)" stroke-width="1.5" rx="4"');
+  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="none" stroke="rgba(120,90,60,.55)" stroke-width="1.5" rx="3"');
+  s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="rgba(130,220,255,.85)" stroke-width="2"');
 
   /* ── pool centre label ── */
   var ph=sw(pW), pw2=sw(pL);
   var FA='text-anchor="middle" font-family="Inter,sans-serif"';
   if(pw2>60&&ph>28){
-    s+=lbl(cx(oPX,pL), sy(oPY)+ph/2-8,'POOL',FA+' fill="rgba(255,255,255,.92)" font-size="13" font-weight="700"');
-    s+=lbl(cx(oPX,pL), sy(oPY)+ph/2+11,pL+'m × '+pW+'m',FA+' fill="rgba(150,220,255,.8)" font-size="11"');
+    s+=lbl(cx(oPX,pL), sy(oPY)+ph/2-8,'POOL',FA+' fill="rgba(255,255,255,.95)" font-size="13" font-weight="700" style="paint-order:stroke" stroke="rgba(0,10,25,.5)" stroke-width="3"');
+    s+=lbl(cx(oPX,pL), sy(oPY)+ph/2+11,pL+'m × '+pW+'m',FA+' fill="rgba(170,230,255,.9)" font-size="11" style="paint-order:stroke" stroke="rgba(0,10,25,.5)" stroke-width="3"');
   }
 
-  /* ── Symmetrical edge labels — all 4 sides use the SAME style, inset from the water edge ──
-     Deep/Shallow sit on the short (vertical) edges; Side A/B sit on the long (horizontal) edges.
-     All four rendered identically for perfect symmetry. */
-  var EDGE='font-family="Inter,sans-serif" font-size="8.5" font-weight="700" letter-spacing=".14em" fill="rgba(140,205,255,.5)"';
+  /* ══ Symmetrical edge labels — identical style on all 4 sides ══ */
+  var EDGE='font-family="Inter,sans-serif" font-size="8.5" font-weight="700" letter-spacing=".14em" fill="rgba(190,230,255,.65)" style="paint-order:stroke" stroke="rgba(0,10,25,.55)" stroke-width="2.5"';
   if(pw2>110&&ph>36){
     s+=lbl(sx(oPX)+10,    sy(oPY)+ph/2+4, 'DEEP END',    EDGE+' text-anchor="start"');
     s+=lbl(sx(oPX+pL)-10, sy(oPY)+ph/2+4, 'SHALLOW END', EDGE+' text-anchor="end"');
@@ -358,24 +363,22 @@ function diagram(c){
     s+=lbl(cx(oPX,pL), sy(oPY+pW)-7,   'SIDE B', EDGE+' text-anchor="middle"');
   }
 
-  /* ── Coping label — its own distinct callout so it reads as a real zone ── */
+  /* ══ Coping label — dark warm text on the stone, its own distinct callout ══ */
   if(c.copOL*sc>140){
-    s+=lbl(sx(oCX)+10, sy(oCY)+13, 'COPING · INCLUDED',
-      'font-family="Inter,sans-serif" font-size="8" font-weight="800" letter-spacing=".12em" fill="rgba(15,35,50,.62)" text-anchor="start"');
+    s+=lbl(sx(oCX)+11, sy(oCY)+14, 'COPING · INCLUDED',
+      'font-family="Inter,sans-serif" font-size="8" font-weight="800" letter-spacing=".12em" fill="rgba(60,38,20,.72)" text-anchor="start"');
   }
 
-  /* ── zone labels on additional rows — "N Rows / T Total" format, only when band is wide enough ── */
+  /* ══ zone labels on additional rows — "N Rows / T Total" ══ */
   var LBL='font-size="10" font-weight="800" font-family="Inter,sans-serif" text-anchor="middle"';
   function zoneLbl(show,bandPx,x,y,text,fill,rot){
     if(!show||bandPx<20||!text) return'';
     return lbl(x,y+4,text,LBL+' fill="'+fill+'"'+(rot?' transform="rotate(-90,'+f2(x)+','+f2(y)+')"':''));
   }
-  /* tile bands */
   s+=zoneLbl(c.tD>0,sw(c.tD), cx(c.cD,c.tD),         cy(c.cA,c.tileOW), rLbl2(S.tile.deep),    '#7ad0ff',true);
   s+=zoneLbl(c.tS>0,sw(c.tS), cx(c.cD+c.tD+c.copOL,c.tS),cy(c.cA,c.tileOW),rLbl2(S.tile.shallow),'#7ad0ff',true);
   s+=zoneLbl(c.tA>0,sw(c.tA), cx(oCX,c.copOL),        cy(c.cA,c.tA),     rLbl2(S.tile.sideA),   '#7ad0ff',false);
   s+=zoneLbl(c.tB>0,sw(c.tB), cx(oCX,c.copOL),        cy(c.cA+c.tA+c.copOW,c.tB),rLbl2(S.tile.sideB),'#7ad0ff',false);
-  /* concrete bands */
   s+=zoneLbl(c.cD>0,sw(c.cD), cx(0,c.cD),             cy(0,oW),          rLbl2(S.conc.deep),    '#f0b878',true);
   s+=zoneLbl(c.cS>0,sw(c.cS), cx(c.cD+c.tileOL,c.cS), cy(0,oW),          rLbl2(S.conc.shallow), '#f0b878',true);
   s+=zoneLbl(c.cA>0,sw(c.cA), cx(c.cD,c.tileOL),      cy(0,c.cA),        rLbl2(S.conc.sideA),   '#f0b878',false);
@@ -383,23 +386,59 @@ function diagram(c){
 
   return '<svg class="pool" viewBox="0 0 '+W+' '+H+'">'
     +'<defs>'
-    +'<linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">'
-    +'<stop offset="0%" stop-color="#0e4a92"/><stop offset="100%" stop-color="#082e60"/>'
+
+    /* ── Water: deep 4-stop gradient for real depth ── */
+    +'<linearGradient id="waterDeep" x1="0" y1="0" x2="0.3" y2="1">'
+    +'<stop offset="0%" stop-color="#2196d8"/>'
+    +'<stop offset="18%" stop-color="#1272b8"/>'
+    +'<stop offset="55%" stop-color="#0a4a8c"/>'
+    +'<stop offset="100%" stop-color="#052860"/>'
     +'</linearGradient>'
-    +'<linearGradient id="copg" x1="0" y1="0" x2="0" y2="1">'
-    +'<stop offset="0%" stop-color="#a8cfe8"/><stop offset="100%" stop-color="#8bb8d8"/>'
-    +'</linearGradient>'
-    +'<pattern id="wat" patternUnits="userSpaceOnUse" width="44" height="22">'
-    +'<rect width="44" height="22" fill="url(#wg)"/>'
-    +'<path d="M0 11 Q11 5 22 11 Q33 17 44 11" fill="none" stroke="rgba(100,190,255,.3)" stroke-width="1.2"/>'
+
+    /* ── Two independent ripple/caustic patterns at different scales & angles ── */
+    +'<pattern id="ripple1" patternUnits="userSpaceOnUse" width="70" height="34" patternTransform="rotate(4)">'
+    +'<path d="M0 17 Q17.5 4 35 17 T70 17" fill="none" stroke="#5fd0ff" stroke-width="1.4" opacity=".5"/>'
+    +'<path d="M0 30 Q17.5 20 35 30 T70 30" fill="none" stroke="#8fe0ff" stroke-width="1" opacity=".3"/>'
     +'</pattern>'
-    +'<filter id="softglow" x="-30%" y="-30%" width="160%" height="160%">'
-    +'<feGaussianBlur stdDeviation="2.2" result="blur"/>'
-    +'<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
+    +'<pattern id="ripple2" patternUnits="userSpaceOnUse" width="53" height="27" patternTransform="rotate(-7)">'
+    +'<path d="M0 13 Q13 3 26 13 T53 13" fill="none" stroke="#bdeeff" stroke-width="0.9" opacity=".4"/>'
+    +'</pattern>'
+
+    /* ── Sheen: soft diagonal light band across the water ── */
+    +'<linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0.7">'
+    +'<stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>'
+    +'<stop offset="38%" stop-color="#ffffff" stop-opacity="0"/>'
+    +'<stop offset="47%" stop-color="#eaf8ff" stop-opacity=".16"/>'
+    +'<stop offset="56%" stop-color="#ffffff" stop-opacity="0"/>'
+    +'<stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>'
+    +'</linearGradient>'
+
+    /* ── Vignette: darkens corners for a sense of real depth ── */
+    +'<radialGradient id="vignette" cx="50%" cy="45%" r="75%">'
+    +'<stop offset="55%" stop-color="#000000" stop-opacity="0"/>'
+    +'<stop offset="100%" stop-color="#001428" stop-opacity=".38"/>'
+    +'</radialGradient>'
+
+    /* ── Coping: warm travertine base + subtle stone-tile texture ── */
+    +'<linearGradient id="stoneBase" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="#d8c4a0"/>'
+    +'<stop offset="55%" stop-color="#c4a878"/>'
+    +'<stop offset="100%" stop-color="#a88a5c"/>'
+    +'</linearGradient>'
+    +'<pattern id="stoneTex" patternUnits="userSpaceOnUse" width="26" height="26" patternTransform="rotate(1)">'
+    +'<rect width="26" height="26" fill="none"/>'
+    +'<path d="M0 0H26V26H0Z" fill="none" stroke="#8a6c46" stroke-width="0.6" opacity=".28"/>'
+    +'<path d="M0 13H26M13 0V26" stroke="#f0e0c0" stroke-width="0.5" opacity=".2"/>'
+    +'</pattern>'
+
+    /* ── Drop shadow used under each zone for real layered depth ── */
+    +'<filter id="dropsh" x="-20%" y="-20%" width="140%" height="140%">'
+    +'<feDropShadow dx="0" dy="2" stdDeviation="3.5" flood-color="#000000" flood-opacity=".4"/>'
     +'</filter>'
+
     +'</defs>'
     +'<rect width="'+W+'" height="'+H+'" fill="#040a12"/>'
-    +'<g filter="url(#softglow)">'+s+'</g></svg>';
+    +s+'</svg>';
 }
 
 /* ── HTML helpers ── */
@@ -486,7 +525,7 @@ function render(){
   h+='<div class="card"><div class="pad diag-wrap"><div class="diag-head">Pool Layout — Top View</div>'+diagram(c)+'</div>';
   /* legend below diagram */
   h+='<div class="diag-legend">';
-  h+='<div class="leg-item"><div class="leg-swatch" style="background:linear-gradient(180deg,#a8cfe8,#8bb8d8)"></div>Coping (included)</div>';
+  h+='<div class="leg-item"><div class="leg-swatch" style="background:linear-gradient(180deg,#d8c4a0,#a88a5c)"></div>Coping (included)</div>';
   h+='<div class="leg-item"><div class="leg-swatch" style="background:#1258a8"></div>Tile — $470/m²</div>';
   if(c.hasConc) h+='<div class="leg-item"><div class="leg-swatch" style="background:#1c0b03"></div>Concrete — $220/m²</div>';
   h+='</div></div>';
