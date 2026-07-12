@@ -352,26 +352,33 @@ function diagram(c){
   })();
   /* (inset wall-bevel rectangle removed — this was the stray "inner border" floating inside
      the water that had no purpose; the single true waterline stroke drawn in ZONE BORDERS
-     below is the only edge the water needs) */
+     below is the only geometric edge the water needs) */
   /* vignette to deepen the corners of the water — applied BEFORE the bench/step tiers so
      those opaque tiers sit cleanly on top, undarkened (they're meant to read as bright, solid steps) */
   s+=rct(oPX,oPY,pL,pW,'fill="url(#vignette)"');
-  /* ── Bench + two-tier corner step, matching the reference layout:
+  /* ── Wall shadow: a soft blurred dark band just inside the true waterline, all the way
+     round — this is the actual 3D depth cue (the wall face falling away from the rim in
+     shadow), done as a soft gradient/blur, never a crisp stroke, so it can't be mistaken
+     for a stray border. ── */
+  (function(){
+    var wallShadow=Math.max(0.1,Math.min(pL,pW)*0.06);
+    s+='<defs><filter id="wallBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2"/></filter></defs>';
+    s+='<g clip-path="url(#waterClip)">';
+    s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="#01121f" stroke-opacity="0.5" stroke-width="'+f2(wallShadow*sc*2)+'" filter="url(#wallBlur)"');
+    s+='</g>';
+  })();
+  /* ── Bench + single corner step, matching the reference layout:
        • A bench runs the full length of Side B (bottom wall) — solid, opaque, one tone lighter than the floor
-       • At the one corner where Side B meets the shallow wall, TWO nested 45° triangles cut in:
-         a larger "second step" (mid tone) and a smaller "top step" nested inside it (lightest tone),
-         so the bench's own edge turns 45° parallel to the top step, exactly as requested.
+       • ONE 45° triangle sits on top of the bench at the corner where Side B meets the shallow
+         wall — a single step, not a nested pair.
        Every tier below is a fully OPAQUE solid fill — no wash/transparency over the water. ── */
   (function(){
     var benchDepth = pW*0.22;                                          /* bench tier depth off Side B */
-    var step2Size  = Math.max(0.35, Math.min(benchDepth*0.92, pL*0.22, pW*0.4)); /* second step (mid tier) */
-    var step1Size  = step2Size*0.52;                                   /* top step (shallowest, nested inside) */
-    var benchTone='#5fc9dc', step2Tone='#8adcea', step1Tone='#dff6fa';  /* floor(gradient) < bench < step2 < step1 */
+    var stepSize   = Math.max(0.35, Math.min(benchDepth*0.92, pL*0.22, pW*0.4)); /* the one corner step */
+    var benchTone='#5fc9dc', stepTone='#8adcea';                        /* floor(gradient) < bench < step */
 
-    s+='<defs><filter id="stepBlur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>';
+    s+='<defs><filter id="stepBlur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.8"/></filter></defs>';
 
-    /* corner points shared by both triangles — same right-angle vertex at the true pool corner,
-       so their hypotenuses are automatically parallel to one another */
     var cornerX=oPX+pL, cornerY=oPY+pW;
     function cornerTri(size){
       return [ [cornerX, cornerY-size], [cornerX, cornerY], [cornerX-size, cornerY] ];
@@ -395,33 +402,25 @@ function diagram(c){
     /* 1. bench — full length of Side B, solid opaque tone */
     s+=rct(oPX,oPY+pW-benchDepth, pL, benchDepth, 'fill="'+benchTone+'"');
     s+=sparkle(19, oPX,oPY+pW-benchDepth, pL,benchDepth, Math.min(100,Math.round(pL*benchDepth*2.6)), 0.22);
-    /* 2. second step — larger corner triangle, solid opaque, sits on top of the bench near the corner */
-    s+='<path d="'+triPath(cornerTri(step2Size))+'" fill="'+step2Tone+'"/>';
-    s+=sparkle(23, cornerX-step2Size,cornerY-step2Size, step2Size,step2Size, Math.round(step2Size*step2Size*3), 0.22);
-    /* 3. top step — smaller corner triangle nested inside the second step, solid opaque, brightest/shallowest */
-    s+='<path d="'+triPath(cornerTri(step1Size))+'" fill="'+step1Tone+'"/>';
-    s+=sparkle(29, cornerX-step1Size,cornerY-step1Size, step1Size,step1Size, Math.round(step1Size*step1Size*3), 0.28);
+    /* 2. the one corner step — solid opaque, sits on top of the bench at the true corner */
+    s+='<path d="'+triPath(cornerTri(stepSize))+'" fill="'+stepTone+'"/>';
+    s+=sparkle(23, cornerX-stepSize,cornerY-stepSize, stepSize,stepSize, Math.round(stepSize*stepSize*3), 0.24);
     s+='</g>';
 
-    /* edge treatment: a soft blurred shadow just on the deeper side of each line, then a crisp
-       bright lip highlight right on the line — reads as a real step nosing, no hard ruled seam */
-    function edgeH(x0,y,len){ s+=rct(x0,y-0.06,len,0.12,'fill="#02141d" opacity="0.32" filter="url(#stepBlur)"'); }
-    function edgeLine(x1,y1,x2,y2){ s+='<line x1="'+f2(sx(x1))+'" y1="'+f2(sy(y1))+'" x2="'+f2(sx(x2))+'" y2="'+f2(sy(y2))+'" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.1"/>'; }
-    function edgeShadowDiag(x1,y1,x2,y2){ s+='<line x1="'+f2(sx(x1)-3)+'" y1="'+f2(sy(y1)-3)+'" x2="'+f2(sx(x2)-3)+'" y2="'+f2(sy(y2)-3)+'" stroke="#02141d" stroke-opacity="0.3" stroke-width="5" filter="url(#stepBlur)"/>'; }
+    /* edge treatment: a stronger blurred shadow on the deeper side of each line, plus a
+       crisp bright lip highlight right on the line — real step-nosing contrast, not a flat seam */
+    function edgeH(x0,y,len){ s+=rct(x0,y-0.07,len,0.16,'fill="#010b14" opacity="0.42" filter="url(#stepBlur)"'); }
+    function edgeLine(x1,y1,x2,y2){ s+='<line x1="'+f2(sx(x1))+'" y1="'+f2(sy(y1))+'" x2="'+f2(sx(x2))+'" y2="'+f2(sy(y2))+'" stroke="#ffffff" stroke-opacity="0.7" stroke-width="1.3"/>'; }
+    function edgeShadowDiag(x1,y1,x2,y2){ s+='<line x1="'+f2(sx(x1)-3.5)+'" y1="'+f2(sy(y1)-3.5)+'" x2="'+f2(sx(x2)-3.5)+'" y2="'+f2(sy(y2)-3.5)+'" stroke="#010b14" stroke-opacity="0.4" stroke-width="6" filter="url(#stepBlur)"/>'; }
 
     /* floor → bench edge (straight, along the top of the bench) */
     edgeH(oPX,oPY+pW-benchDepth,pL);
     edgeLine(oPX,oPY+pW-benchDepth, oPX+pL,oPY+pW-benchDepth);
 
-    /* bench → second step edge (the mitred 45° line — THIS is the new cut Jacob asked for) */
-    var s2=cornerTri(step2Size);
-    edgeShadowDiag(s2[0][0],s2[0][1], s2[2][0],s2[2][1]);
-    edgeLine(s2[0][0],s2[0][1], s2[2][0],s2[2][1]);
-
-    /* second step → top step edge (the inner, smaller, parallel 45° line) */
-    var s1=cornerTri(step1Size);
-    edgeShadowDiag(s1[0][0],s1[0][1], s1[2][0],s1[2][1]);
-    edgeLine(s1[0][0],s1[0][1], s1[2][0],s1[2][1]);
+    /* bench → step edge (the mitred 45° line) */
+    var st=cornerTri(stepSize);
+    edgeShadowDiag(st[0][0],st[0][1], st[2][0],st[2][1]);
+    edgeLine(st[0][0],st[0][1], st[2][0],st[2][1]);
   })();
   /* (diagonal sheen removed — was creating an unwanted left-right brightness gradient) */
 
