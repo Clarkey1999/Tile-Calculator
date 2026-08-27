@@ -350,28 +350,35 @@ function diagram(c){
     var ox0=sx(oCX), oy0=sy(oCY), ow=sw(c.copOL), oh=sw(c.copOW);
     var ix0=sx(oPX), iy0=sy(oPY), iw=sw(pL), ih=sw(pW);
     var bw=sw(cW);                                   /* coping band width in px */
-    /* stone ring via even-odd fill (outer rect + inner CHAMFERED pool path as hole, so the
-       coping wraps the cut corner tightly with no gap) */
+    /* stone ring via even-odd fill (outer rect + inner SQUARE water rect as hole → square
+       corners, so the coping has a 400×400 square tile in each corner, not a 45° mitre) */
     s+='<path fill="url(#stoneBase)" fill-rule="evenodd" d="'
       +'M '+f2(ox0)+' '+f2(oy0)+' h '+f2(ow)+' v '+f2(oh)+' h '+f2(-ow)+' Z '
-      +poolPath+'"/>';
+      +'M '+f2(ix0)+' '+f2(iy0)+' h '+f2(iw)+' v '+f2(ih)+' h '+f2(-iw)+' Z"/>';
     /* soft grain over the ring only (clipped to the ring) */
     s+='<g clip-path="url(#copingRing)">'
       +'<rect x="'+f2(ox0)+'" y="'+f2(oy0)+'" width="'+f2(ow)+'" height="'+f2(oh)+'" fill="url(#stoneGrain)" opacity="0.5"/>'
       +'</g>';
-    /* grout lines: one tile ≈ 0.4m along each run. Lines cross the band width only. */
-    var tileLen=Math.max(0.30, cW*1.05);            /* tile length along the run (m) */
+    /* grout lines: SQUARE 400×400 tile in every corner (no 45° mitre — that's not how it's
+       laid). The perimeter tiles run BETWEEN the corner squares; each corner is bounded by an
+       L of one horizontal + one vertical grout line. cW is the coping width (≈0.4m), so the
+       corner square is exactly cW×cW = 400×400. */
     function grout(x1,y1,x2,y2){ s+='<line x1="'+f2(x1)+'" y1="'+f2(y1)+'" x2="'+f2(x2)+'" y2="'+f2(y2)+'" stroke="#8a8580" stroke-opacity="0.6" stroke-width="1.1"/>'; }
+    var tileLen=Math.max(0.30, cW*1.0);             /* running tile length ≈ coping width (m) */
     var n, i, t;
-    /* top & bottom rows: vertical grout lines across the band height */
-    n=Math.max(1,Math.round(c.copOL/tileLen));
-    for(i=1;i<n;i++){ t=oCX+c.copOL*i/n; grout(sx(t),oy0, sx(t),oy0+bw); grout(sx(t),oy0+oh-bw, sx(t),oy0+oh); }
-    /* left & right columns: horizontal grout lines across the band width (skip the corners already split) */
-    n=Math.max(1,Math.round(c.copOW/tileLen));
-    for(i=1;i<n;i++){ t=oCY+c.copOW*i/n; grout(ox0,sy(t), ox0+bw,sy(t)); grout(ox0+ow-bw,sy(t), ox0+ow,sy(t)); }
-    /* the 4 corner mitre lines where the rows meet the columns */
-    grout(ox0,oy0, ox0+bw,oy0+bw);           grout(ox0+ow,oy0, ox0+ow-bw,oy0+bw);
-    grout(ox0,oy0+oh, ox0+bw,oy0+oh-bw);     grout(ox0+ow,oy0+oh, ox0+ow-bw,oy0+oh-bw);
+    /* --- corner square boundary lines (the L in each corner) --- */
+    /* top-left */    grout(ox0+bw,oy0, ox0+bw,oy0+bw);   grout(ox0,oy0+bw, ox0+bw,oy0+bw);
+    /* top-right */   grout(ox0+ow-bw,oy0, ox0+ow-bw,oy0+bw); grout(ox0+ow-bw,oy0+bw, ox0+ow,oy0+bw);
+    /* bottom-left */ grout(ox0+bw,oy0+oh-bw, ox0+bw,oy0+oh); grout(ox0,oy0+oh-bw, ox0+bw,oy0+oh-bw);
+    /* bottom-right */grout(ox0+ow-bw,oy0+oh-bw, ox0+ow-bw,oy0+oh); grout(ox0+ow-bw,oy0+oh-bw, ox0+ow,oy0+oh-bw);
+    /* --- running tiles along the top & bottom, BETWEEN the corner squares (x from oCX+cW to oCX+copOL-cW) --- */
+    var runLen=c.copOL-2*cW;
+    n=Math.max(1,Math.round(runLen/tileLen));
+    for(i=1;i<n;i++){ t=oCX+cW+runLen*i/n; grout(sx(t),oy0, sx(t),oy0+bw); grout(sx(t),oy0+oh-bw, sx(t),oy0+oh); }
+    /* --- running tiles along the left & right, BETWEEN the corner squares --- */
+    var runW=c.copOW-2*cW;
+    n=Math.max(1,Math.round(runW/tileLen));
+    for(i=1;i<n;i++){ t=oCY+cW+runW*i/n; grout(ox0,sy(t), ox0+bw,sy(t)); grout(ox0+ow-bw,sy(t), ox0+ow,sy(t)); }
     /* subtle inner + outer edge highlight for a honed-stone catch (no dark border) */
     s+='<rect x="'+f2(ix0)+'" y="'+f2(iy0)+'" width="'+f2(iw)+'" height="'+f2(ih)+'" fill="none" stroke="#efeae0" stroke-opacity="0.4" stroke-width="1"/>';
   })();
@@ -556,7 +563,7 @@ function diagram(c){
     /* clip = the coping ring (outer coping rect minus the water rect) */
     +'<clipPath id="copingRing" clip-rule="evenodd"><path fill-rule="evenodd" d="'
       +'M '+f2(sx(oCX))+' '+f2(sy(oCY))+' h '+f2(sw(c.copOL))+' v '+f2(sw(c.copOW))+' h '+f2(-sw(c.copOL))+' Z '
-      +poolPath+'"/></clipPath>'
+      +'M '+f2(sx(oPX))+' '+f2(sy(oPY))+' h '+f2(sw(pL))+' v '+f2(sw(pW))+' h '+f2(-sw(pL))+' Z"/></clipPath>'
 
     /* ── Drop shadow used under each zone for real layered depth ── */
     +'<filter id="dropsh" x="-20%" y="-20%" width="140%" height="140%">'
