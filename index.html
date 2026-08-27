@@ -483,10 +483,11 @@ function diagram(c){
             veining looks like from above)
          3. a crisp rectangular PAVER grid on top so it reads as laid coping tiles ── */
     /* true light-GREY travertine (neutral grey, no warm/cream cast) */
+    /* true cool GREY travertine — a hair of blue so it can never read as beige/cream */
     +'<linearGradient id="stoneBase" x1="0" y1="0" x2="0.1" y2="1">'
-    +'<stop offset="0%" stop-color="#cfd0d1"/>'
-    +'<stop offset="50%" stop-color="#bcbdbe"/>'
-    +'<stop offset="100%" stop-color="#a6a7a8"/>'
+    +'<stop offset="0%" stop-color="#c3c6c8"/>'
+    +'<stop offset="50%" stop-color="#aeb2b4"/>'
+    +'<stop offset="100%" stop-color="#979b9d"/>'
     +'</linearGradient>'
     /* soft grey cloud grain laid over the ring so the stone is not dead-flat (subtle) */
     +'<filter id="stoneGrainFx" x="-5%" y="-5%" width="110%" height="110%">'
@@ -494,7 +495,7 @@ function diagram(c){
     +'<feGaussianBlur in="c" stdDeviation="0.5" result="sc"/>'
     +'<feColorMatrix in="sc" type="matrix" values="0 0 0 0 0.55  0 0 0 0 0.55  0 0 0 0 0.56  0 0 0 0.18 -0.03"/>'
     +'</filter>'
-    +'<radialGradient id="stoneGrain"><stop offset="0%" stop-color="#b6b7b8"/><stop offset="100%" stop-color="#b0b1b2"/></radialGradient>'
+    +'<radialGradient id="stoneGrain"><stop offset="0%" stop-color="#a9adaf"/><stop offset="100%" stop-color="#a3a7a9"/></radialGradient>'
     /* clip = the coping ring (outer coping rect minus the water rect) */
     +'<clipPath id="copingRing" clip-rule="evenodd"><path fill-rule="evenodd" d="'
       +'M '+f2(sx(oCX))+' '+f2(sy(oCY))+' h '+f2(sw(c.copOL))+' v '+f2(sw(c.copOW))+' h '+f2(-sw(c.copOL))+' Z '
