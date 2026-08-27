@@ -1,7 +1,7 @@
 // Paradise Pools Tile & Concrete Calculator — service worker
 // Caches the app on first visit so it works fully offline afterwards.
 
-const CACHE_NAME = "pp-tile-calc-v16";
+const CACHE_NAME = "pp-tile-calc-v17";
 const ASSETS = [
   "./",
   "./index.html",
@@ -30,11 +30,29 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Network-first for navigations / the HTML shell so the app ALWAYS shows the
+// latest version the moment it's online (fixes "refresh shows no changes"), and
+// falls back to cache only when offline. Other assets stay cache-first for speed.
 self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  const isHTML =
+    req.mode === "navigate" ||
+    (req.headers.get("accept") || "").includes("text/html");
+
+  if (isHTML) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put("./index.html", copy));
+          return res;
+        })
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).catch(() => caches.match("./index.html"));
-    })
+    caches.match(req).then((cached) => cached || fetch(req))
   );
 });
