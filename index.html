@@ -327,6 +327,16 @@ function diagram(c){
   var hasTile=S.tile.deep+S.tile.shallow+S.tile.sideA+S.tile.sideB>0;
   var s='';
 
+  /* ── Pool shell outline with ONE 45° cut corner at the shallow-right corner (matches the
+     reference fibreglass shape). Used for the water fill, the clip, and the waterline stroke. ── */
+  var chamfer=Math.max(0.30, Math.min(pW*0.28, pL*0.14));   /* size of the cut corner (m) — small, per reference */
+  var poolPath='M '+f2(sx(oPX))+' '+f2(sy(oPY))
+    +' L '+f2(sx(oPX+pL))+' '+f2(sy(oPY))                                   /* top edge → top-right */
+    +' L '+f2(sx(oPX+pL))+' '+f2(sy(oPY+pW-chamfer))                        /* down to chamfer start */
+    +' L '+f2(sx(oPX+pL-chamfer))+' '+f2(sy(oPY+pW))                        /* 45° cut */
+    +' L '+f2(sx(oPX))+' '+f2(sy(oPY+pW))                                   /* bottom edge → bottom-left */
+    +' Z';
+
   /* ══ ZONE FILLS — outside-in: concrete → tile → coping (stone) → water ══ */
   if(c.hasConc) s+=rct(0,0,oL,oW,'fill="#201209" rx="7" filter="url(#dropsh)"');
   if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="#081d38" rx="4" filter="url(#dropsh)"');
@@ -339,17 +349,18 @@ function diagram(c){
     var ox0=sx(oCX), oy0=sy(oCY), ow=sw(c.copOL), oh=sw(c.copOW);
     var ix0=sx(oPX), iy0=sy(oPY), iw=sw(pL), ih=sw(pW);
     var bw=sw(cW);                                   /* coping band width in px */
-    /* stone ring via even-odd fill (outer rect + inner water rect as hole) */
+    /* stone ring via even-odd fill (outer rect + inner CHAMFERED pool path as hole, so the
+       coping wraps the cut corner tightly with no gap) */
     s+='<path fill="url(#stoneBase)" fill-rule="evenodd" d="'
       +'M '+f2(ox0)+' '+f2(oy0)+' h '+f2(ow)+' v '+f2(oh)+' h '+f2(-ow)+' Z '
-      +'M '+f2(ix0)+' '+f2(iy0)+' h '+f2(iw)+' v '+f2(ih)+' h '+f2(-iw)+' Z"/>';
+      +poolPath+'"/>';
     /* soft grain over the ring only (clipped to the ring) */
     s+='<g clip-path="url(#copingRing)">'
       +'<rect x="'+f2(ox0)+'" y="'+f2(oy0)+'" width="'+f2(ow)+'" height="'+f2(oh)+'" fill="url(#stoneGrain)" opacity="0.5"/>'
       +'</g>';
     /* grout lines: one tile ≈ 0.4m along each run. Lines cross the band width only. */
     var tileLen=Math.max(0.30, cW*1.05);            /* tile length along the run (m) */
-    function grout(x1,y1,x2,y2){ s+='<line x1="'+f2(x1)+'" y1="'+f2(y1)+'" x2="'+f2(x2)+'" y2="'+f2(y2)+'" stroke="#7c766a" stroke-opacity="0.7" stroke-width="1.2"/>'; }
+    function grout(x1,y1,x2,y2){ s+='<line x1="'+f2(x1)+'" y1="'+f2(y1)+'" x2="'+f2(x2)+'" y2="'+f2(y2)+'" stroke="#8a8580" stroke-opacity="0.6" stroke-width="1.1"/>'; }
     var n, i, t;
     /* top & bottom rows: vertical grout lines across the band height */
     n=Math.max(1,Math.round(c.copOL/tileLen));
@@ -363,116 +374,64 @@ function diagram(c){
     /* subtle inner + outer edge highlight for a honed-stone catch (no dark border) */
     s+='<rect x="'+f2(ix0)+'" y="'+f2(iy0)+'" width="'+f2(iw)+'" height="'+f2(ih)+'" fill="none" stroke="#efeae0" stroke-opacity="0.4" stroke-width="1"/>';
   })();
-  /* water — uniform bright turquoise, fine sparse caustic sparkle (deterministic dots, strictly clipped) */
-  s+=rct(oPX,oPY,pL,pW,'fill="url(#waterDeep)"');
-  s+=rct(oPX,oPY,pL,pW,'fill="url(#deepPoolAccent)"');
+  /* ══ WATER — bright, even turquoise on the chamfered pool shape, with a soft perimeter
+     depth band, gentle caustic ripples, and a clean L-shaped bench+step in the cut corner,
+     modelled on the reference Barrier Reef diagram. ══ */
+  s+='<path d="'+poolPath+'" fill="url(#waterDeep)"/>';
+  s+='<g clip-path="url(#waterClip)">';
+  /* soft deep-end shading (subtle, keeps the water bright like the reference) */
+  s+='<path d="'+poolPath+'" fill="url(#deepPoolAccent)"/>';
+  /* perimeter depth band — a soft darker inset ring = the wall falling away from the rim */
   (function(){
-    var rnd=seededRand(7);
-    var count=Math.min(220,Math.round(pL*pW*2.4));
-    var dots='';
+    var wallW=Math.max(0.16,Math.min(pL,pW)*0.07);
+    s+='<path d="'+poolPath+'" fill="none" stroke="url(#wallBand)" stroke-opacity="0.55" stroke-width="'+f2(wallW*sc)+'"/>';
+  })();
+  /* caustic ripples — deterministic, organic; a touch bigger/softer than before to echo the reference water */
+  (function(){
+    var rnd=seededRand(7), count=Math.min(180,Math.round(pL*pW*2.0)), dots='';
     for(var i=0;i<count;i++){
-      var fx=rnd(); /* 0 = deep end, 1 = shallow end — used to bias brightness/size with depth */
-      var rx=oPX+fx*pL, ry=oPY+rnd()*pW;
-      var depthBoost=0.55+fx*0.75; /* caustics read brighter/larger in shallower water */
-      var r=(0.03+rnd()*0.075)*sc*depthBoost;
-      var op=((0.05+rnd()*0.12)*depthBoost).toFixed(2);
-      dots+='<circle cx="'+f2(sx(rx))+'" cy="'+f2(sy(ry))+'" r="'+f2(r)+'" fill="#eafbff" opacity="'+op+'"/>';
+      var rx=oPX+rnd()*pL, ry=oPY+rnd()*pW;
+      var r=(0.05+rnd()*0.14)*sc, op=(0.05+rnd()*0.10).toFixed(2);
+      dots+='<circle cx="'+f2(sx(rx))+'" cy="'+f2(sy(ry))+'" r="'+f2(r)+'" fill="#dff8ff" opacity="'+op+'"/>';
     }
-    s+='<g clip-path="url(#waterClip)">'+dots+'</g>';
+    s+=dots;
   })();
-  /* (inset wall-bevel rectangle removed — this was the stray "inner border" floating inside
-     the water that had no purpose; the single true waterline stroke drawn in ZONE BORDERS
-     below is the only geometric edge the water needs) */
-  /* vignette to deepen the corners of the water — applied BEFORE the bench/step tiers so
-     those opaque tiers sit cleanly on top, undarkened (they're meant to read as bright, solid steps) */
-  s+=rct(oPX,oPY,pL,pW,'fill="url(#vignette)"');
-  /* ── Perimeter WALL BEVEL — the main depth cue, matching the reference fibreglass shell:
-     the pool wall falls away from the waterline all the way round, reading as a darker
-     turquoise band inset from the rim, with a crisp bright lip right on the waterline and a
-     soft shadow where the wall meets the floor. This is what gives the pool real 3D depth
-     rather than looking like a flat painted rectangle. ── */
+  s+='</g>';
+
+  /* ── Entry STEPS at the shallow end, drawn top-down as a lighter-teal zone spanning the
+       shallow-end wall with straight step nosings parallel to that wall — the way pool steps
+       read from above in the reference. The zone is deepest at the wall and the chamfered
+       corner trims its outer corner cleanly. Two tiers, each lighter as it rises out. ── */
   (function(){
-    var wallW=Math.max(0.18,Math.min(pL,pW)*0.085);   /* wall band thickness in real metres */
+    var stepZone=Math.max(0.6, Math.min(pL*0.24, 1.7));   /* how far the steps reach in from the shallow wall (m) */
+    var t1='#5ccadd', t2='#88e1ee';                         /* tier tones, lighter climbing out */
+    var xWall=oPX+pL;                                       /* shallow-end wall x */
+    s+='<defs><filter id="stepBlur" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>';
     s+='<g clip-path="url(#waterClip)">';
-    /* darker wall band: an inset ring drawn as a thick stroke hugging the waterline */
-    s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="url(#wallBand)" stroke-width="'+f2(wallW*sc)+'"');
-    /* soft inner shadow where wall meets floor (inset by the wall thickness) */
-    s+=rct(oPX+wallW,oPY+wallW,pL-2*wallW,pW-2*wallW,
-           'fill="none" stroke="#02182b" stroke-opacity="0.28" stroke-width="'+f2(0.09*sc)+'" filter="url(#softDepth)" rx="'+f2(0.15*sc)+'"');
-    /* bright waterline lip right on the rim */
-    s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="#bfeef7" stroke-opacity="0.55" stroke-width="1.4"');
+    /* soft shadow the step zone casts onto the floor */
+    s+=rct(xWall-stepZone-0.10, oPY, 0.20, pW, 'fill="#023049" opacity="0.26" filter="url(#stepBlur)"');
+    /* tier 1 (lower/outer) — full step zone */
+    s+=rct(xWall-stepZone, oPY, stepZone, pW, 'fill="'+t1+'"');
+    /* tier 2 (upper/inner) — closer to the wall */
+    s+=rct(xWall-stepZone*0.55, oPY, stepZone*0.55, pW, 'fill="'+t2+'"');
+    s+='</g>';
+    /* vertical nosing lines (parallel to the shallow wall) — bright lip + soft shadow */
+    function noseV(x){
+      s+=rct(x-0.07, oPY, 0.14, pW, 'fill="#022a40" opacity="0.32" filter="url(#stepBlur)"');
+      s+='<line x1="'+f2(sx(x))+'" y1="'+f2(sy(oPY))+'" x2="'+f2(sx(x))+'" y2="'+f2(sy(oPY+pW))+'" stroke="#eafcff" stroke-opacity="0.55" stroke-width="1.1"/>';
+    }
+    /* clip the nosing lines to the shell too so the chamfer trims them */
+    s+='<g clip-path="url(#waterClip)">';
+    noseV(xWall-stepZone);
+    noseV(xWall-stepZone*0.55);
     s+='</g>';
   })();
-  /* ── Bench + corner entry steps, matching the reference fibreglass layout:
-       • A submerged BENCH ledge runs the full length of the shallow end (Side B) — a raised
-         tier, lighter than the floor, with a bright nosing lip and a soft drop-shadow onto
-         the floor so it reads as a real ledge you could sit on.
-       • A set of ENTRY STEPS sits in the shallow corner as TWO nested diagonal tiers (a proper
-         stair, not one flat triangle), each tier lighter as it rises toward the coping, each
-         with its own mitred nosing edge and shadow.
-       Tiers are progressively lighter (shallower = brighter) so the eye reads them as steps
-       climbing OUT of the water. ── */
-  (function(){
-    var benchDepth = pW*0.20;                                             /* bench ledge depth off Side B */
-    var stepSpan   = Math.max(0.5, Math.min(pL*0.30, pW*0.55));           /* corner step reach */
-    /* three ascending water tones: floor(gradient) < bench < step1 < step2 */
-    var benchTone='#4fbfd4', step1Tone='#79d6e6', step2Tone='#a6e9f2';
-
-    s+='<defs><filter id="stepBlur" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>';
-
-    /* corner where Side B (bottom) meets the shallow end (right) — steps nest into this corner */
-    var cornerX=oPX+pL, cornerY=oPY+pW;
-    function cornerTri(size){ return [ [cornerX, cornerY-size], [cornerX, cornerY], [cornerX-size, cornerY] ]; }
-    function triPath(pts){
-      var d='M '+f2(sx(pts[0][0]))+' '+f2(sy(pts[0][1]));
-      for(var i=1;i<pts.length;i++) d+=' L '+f2(sx(pts[i][0]))+' '+f2(sy(pts[i][1]));
-      return d+' Z';
-    }
-    function sparkle(seed,minX,minY,w,h,count,brightness){
-      var rnd=seededRand(seed), out='';
-      for(var i=0;i<count;i++){
-        var rx=minX+rnd()*w, ry=minY+rnd()*h;
-        var r=(0.025+rnd()*0.06)*sc, op=(brightness*(0.5+rnd()*0.6)).toFixed(2);
-        out+='<circle cx="'+f2(sx(rx))+'" cy="'+f2(sy(ry))+'" r="'+f2(r)+'" fill="#ffffff" opacity="'+op+'"/>';
-      }
-      return out;
-    }
-
-    s+='<g clip-path="url(#waterClip)">';
-    /* soft shadow the bench casts down onto the floor (just above the bench top edge) */
-    s+=rct(oPX,oPY+pW-benchDepth-0.12, pL, 0.24, 'fill="#021a2e" opacity="0.30" filter="url(#stepBlur)"');
-    /* 1. bench ledge — full length of Side B */
-    s+=rct(oPX,oPY+pW-benchDepth, pL, benchDepth, 'fill="'+benchTone+'"');
-    s+=sparkle(19, oPX,oPY+pW-benchDepth, pL,benchDepth, Math.min(90,Math.round(pL*benchDepth*2.4)), 0.20);
-    /* 2. entry steps — two nested corner tiers (outer/lower first, inner/upper on top) */
-    s+='<path d="'+triPath(cornerTri(stepSpan))+'" fill="'+step1Tone+'"/>';
-    s+=sparkle(23, cornerX-stepSpan,cornerY-stepSpan, stepSpan,stepSpan, Math.round(stepSpan*stepSpan*2.6), 0.22);
-    s+='<path d="'+triPath(cornerTri(stepSpan*0.58))+'" fill="'+step2Tone+'"/>';
-    s+=sparkle(29, cornerX-stepSpan*0.58,cornerY-stepSpan*0.58, stepSpan*0.58,stepSpan*0.58, Math.round(stepSpan*stepSpan*1.1), 0.26);
-    s+='</g>';
-
-    /* ── edge treatment: soft shadow on the deep side of each nosing + crisp bright lip on it ── */
-    function edgeShadowH(x0,y,len){ s+=rct(x0,y-0.09,len,0.18,'fill="#021325" opacity="0.42" filter="url(#stepBlur)"'); }
-    function edgeLineH(x0,y,len){ s+='<line x1="'+f2(sx(x0))+'" y1="'+f2(sy(y))+'" x2="'+f2(sx(x0+len))+'" y2="'+f2(sy(y))+'" stroke="#eafcff" stroke-opacity="0.5" stroke-width="1"/>'; }
-    function edgeDiag(x1,y1,x2,y2){
-      s+='<line x1="'+f2(sx(x1)-3)+'" y1="'+f2(sy(y1)-3)+'" x2="'+f2(sx(x2)-3)+'" y2="'+f2(sy(y2)-3)+'" stroke="#021325" stroke-opacity="0.4" stroke-width="5.5" filter="url(#stepBlur)"/>';
-      s+='<line x1="'+f2(sx(x1))+'" y1="'+f2(sy(y1))+'" x2="'+f2(sx(x2))+'" y2="'+f2(sy(y2))+'" stroke="#eafcff" stroke-opacity="0.6" stroke-width="1.1"/>';
-    }
-    /* floor → bench nosing */
-    edgeShadowH(oPX,oPY+pW-benchDepth,pL);
-    edgeLineH(oPX,oPY+pW-benchDepth,pL);
-    /* bench → step1 and step1 → step2 mitred nosings */
-    var st1=cornerTri(stepSpan), st2=cornerTri(stepSpan*0.58);
-    edgeDiag(st1[0][0],st1[0][1], st1[2][0],st1[2][1]);
-    edgeDiag(st2[0][0],st2[0][1], st2[2][0],st2[2][1]);
-  })();
-  /* (diagonal sheen removed — was creating an unwanted left-right brightness gradient) */
 
   /* ══ ZONE BORDERS ══ */
   if(c.hasConc) s+=rct(0,0,oL,oW,'fill="none" stroke="rgba(224,146,64,.55)" stroke-width="1.5" rx="7"');
   if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="none" stroke="rgba(0,170,255,.5)" stroke-width="1.5" rx="4"');
   /* (coping dark border removed — coping now has its own soft honed-stone edge highlight) */
-  s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="rgba(130,220,255,.85)" stroke-width="2"');
+  s+='<path d="'+poolPath+'" fill="none" stroke="rgba(130,220,255,.85)" stroke-width="2"/>';
 
   /* ── pool centre label ── */
   var ph=sw(pW), pw2=sw(pL);
@@ -522,12 +481,10 @@ function diagram(c){
     /* ── Water: dark navy at the deep end, smoothly lightening to bright turquoise at the shallow
        end — pinned to the actual water rect in real coordinates so it always tracks the geometry ── */
     +'<linearGradient id="waterDeep" x1="'+f2(sx(oPX))+'" y1="'+f2(sy(oPY))+'" x2="'+f2(sx(oPX+pL))+'" y2="'+f2(sy(oPY))+'" gradientUnits="userSpaceOnUse">'
-    +'<stop offset="0%" stop-color="#082c4a"/>'
-    +'<stop offset="24%" stop-color="#0c3a5e"/>'
-    +'<stop offset="46%" stop-color="#136e94"/>'
-    +'<stop offset="68%" stop-color="#1e9cba"/>'
-    +'<stop offset="87%" stop-color="#3fc4d8"/>'
-    +'<stop offset="100%" stop-color="#5fe0ea"/>'
+    +'<stop offset="0%" stop-color="#1a86a8"/>'
+    +'<stop offset="30%" stop-color="#25a0bd"/>'
+    +'<stop offset="60%" stop-color="#35bcd0"/>'
+    +'<stop offset="100%" stop-color="#57d9e4"/>'
     +'</linearGradient>'
 
     /* ── Wall band: the darker turquoise of the pool wall dropping away from the rim.
@@ -548,8 +505,9 @@ function diagram(c){
     +'<stop offset="100%" stop-color="#02182b" stop-opacity="0"/>'
     +'</radialGradient>'
 
-    /* ── Water clip path — keeps the sparkle dots strictly inside the water rect, no bleed ── */
-    +'<clipPath id="waterClip"><rect x="'+f2(sx(oPX))+'" y="'+f2(sy(oPY))+'" width="'+f2(sw(pL))+'" height="'+f2(sw(pW))+'"/></clipPath>'
+    /* ── Water clip path — the pool shape WITH one 45° cut corner at the shallow-right corner,
+       matching the reference shell. All water fills/ripples/steps clip to this. ── */
+    +'<clipPath id="waterClip"><path d="'+poolPath+'"/></clipPath>'
 
     /* ── Sheen: soft diagonal light band across the water ── */
     +'<linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0.7">'
@@ -591,7 +549,7 @@ function diagram(c){
     /* clip = the coping ring (outer coping rect minus the water rect) */
     +'<clipPath id="copingRing" clip-rule="evenodd"><path fill-rule="evenodd" d="'
       +'M '+f2(sx(oCX))+' '+f2(sy(oCY))+' h '+f2(sw(c.copOL))+' v '+f2(sw(c.copOW))+' h '+f2(-sw(c.copOL))+' Z '
-      +'M '+f2(sx(oPX))+' '+f2(sy(oPY))+' h '+f2(sw(pL))+' v '+f2(sw(pW))+' h '+f2(-sw(pL))+' Z"/></clipPath>'
+      +poolPath+'"/></clipPath>'
 
     /* ── Drop shadow used under each zone for real layered depth ── */
     +'<filter id="dropsh" x="-20%" y="-20%" width="140%" height="140%">'
