@@ -330,9 +330,10 @@ function diagram(c){
   /* ══ ZONE FILLS — outside-in: concrete → tile → coping (stone) → water ══ */
   if(c.hasConc) s+=rct(0,0,oL,oW,'fill="#201209" rx="7" filter="url(#dropsh)"');
   if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="#081d38" rx="4" filter="url(#dropsh)"');
-  /* coping — premium granite paver look: stone base + corrected fine/coarse fleck texture + tile joints */
+  /* coping — honed grey travertine: soft-veined stone base + crisp paver grid + gentle inner sheen */
   s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#stoneBase)" rx="3" filter="url(#graniteFleck)"');
   s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#copingJoints)" rx="3"');
+  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="none" stroke="#f4efe6" stroke-opacity="0.35" stroke-width="1.2" rx="3"');
   /* water — uniform bright turquoise, fine sparse caustic sparkle (deterministic dots, strictly clipped) */
   s+=rct(oPX,oPY,pL,pW,'fill="url(#waterDeep)"');
   s+=rct(oPX,oPY,pL,pW,'fill="url(#deepPoolAccent)"');
@@ -452,7 +453,7 @@ function diagram(c){
   /* ══ Coping label — dark warm text on the stone, its own distinct callout ══ */
   if(c.copOL*sc>140){
     s+=lbl(sx(oCX)+11, sy(oCY)+14, 'COPING · INCLUDED',
-      'font-family="Inter,sans-serif" font-size="8" font-weight="800" letter-spacing=".12em" fill="rgba(225,228,232,.75)" text-anchor="start"');
+      'font-family="Inter,sans-serif" font-size="8" font-weight="800" letter-spacing=".12em" fill="rgba(74,68,58,.72)" text-anchor="start"');
   }
 
   /* ══ zone labels on additional rows — "N Rows / T Total" ══ */
@@ -512,26 +513,37 @@ function diagram(c){
     +'<stop offset="100%" stop-color="#001428" stop-opacity=".38"/>'
     +'</radialGradient>'
 
-    /* ── Coping: premium granite paver — richer stone base, corrected fine-grain +
-       coarse veining noise (the old baseFrequency of 1.3 was far too high and just produced
-       flat static; real stone grain needs a much lower frequency), plus a tile-joint pattern
-       layered on top so it reads as individual pavers, not a texture wash ── */
-    +'<linearGradient id="stoneBase" x1="0" y1="0" x2="0" y2="1">'
-    +'<stop offset="0%" stop-color="#565a5f"/>'
-    +'<stop offset="100%" stop-color="#2b2e31"/>'
+    /* ── Coping: honed GREY TRAVERTINE pavers. Travertine is a soft, matte, light
+       warm-grey stone with gentle cloud-like veining (NOT the sharp granite fleck the
+       old version faked with high-frequency turbulence — that just read as blur). The
+       look is built in three clean layers:
+         1. a light warm-grey base gradient (silvery top, slightly deeper bottom)
+         2. ONE very-low-frequency soft vein layer (large soft clouds, heavily blurred
+            then colour-mapped to a faint tonal drift — this is what real travertine
+            veining looks like from above)
+         3. a crisp rectangular PAVER grid on top so it reads as laid coping tiles ── */
+    +'<linearGradient id="stoneBase" x1="0" y1="0" x2="0.15" y2="1">'
+    +'<stop offset="0%" stop-color="#d8d4cd"/>'
+    +'<stop offset="45%" stop-color="#c7c2b9"/>'
+    +'<stop offset="100%" stop-color="#aca69b"/>'
     +'</linearGradient>'
-    +'<filter id="graniteFleck" x="0%" y="0%" width="100%" height="100%">'
-    +'<feTurbulence type="fractalNoise" baseFrequency="0.22" numOctaves="3" seed="4" result="fineNoise"/>'
-    +'<feColorMatrix in="fineNoise" type="matrix" values="0 0 0 0 0.08  0 0 0 0 0.09  0 0 0 0 0.1   0 0 0 0.55 0" result="darkfleck"/>'
-    +'<feColorMatrix in="fineNoise" type="matrix" values="0 0 0 0 0.8   0 0 0 0 0.82  0 0 0 0 0.85  0 0 0 0.25 -0.08" result="lightfleck"/>'
-    +'<feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="11" result="veinNoise"/>'
-    +'<feColorMatrix in="veinNoise" type="matrix" values="0 0 0 0 0.6  0 0 0 0 0.62  0 0 0 0 0.65  0 0 0 0.18 -0.05" result="veining"/>'
-    +'<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="veining"/><feMergeNode in="darkfleck"/><feMergeNode in="lightfleck"/></feMerge>'
+    +'<filter id="graniteFleck" x="-5%" y="-5%" width="110%" height="110%">'
+    /* large soft travertine clouds: very low frequency, blurred, subtle */
+    +'<feTurbulence type="fractalNoise" baseFrequency="0.016 0.024" numOctaves="3" seed="8" result="clouds"/>'
+    +'<feGaussianBlur in="clouds" stdDeviation="0.5" result="softClouds"/>'
+    +'<feColorMatrix in="softClouds" type="matrix" values="0 0 0 0 0.58  0 0 0 0 0.56  0 0 0 0 0.51  0 0 0 0.22 -0.04" result="veinTone"/>'
+    /* very faint fine grain so it is not dead-flat, but low opacity so it never reads as noise */
+    +'<feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="3" result="grain"/>'
+    +'<feColorMatrix in="grain" type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.34  0 0 0 0 0.31  0 0 0 0.05 0" result="grainTone"/>'
+    +'<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="veinTone"/><feMergeNode in="grainTone"/></feMerge>'
     +'</filter>'
-    +'<pattern id="copingJoints" patternUnits="userSpaceOnUse" width="'+f2(jointTile)+'" height="'+f2(jointTile)+'">'
-    +'<rect width="'+f2(jointTile)+'" height="'+f2(jointTile)+'" fill="none"/>'
-    +'<line x1="0" y1="0" x2="'+f2(jointTile)+'" y2="0" stroke="#121417" stroke-opacity="0.4" stroke-width="1"/>'
-    +'<line x1="0" y1="0" x2="0" y2="'+f2(jointTile)+'" stroke="#121417" stroke-opacity="0.4" stroke-width="1"/>'
+    +'<pattern id="copingJoints" patternUnits="userSpaceOnUse" width="'+f2(jointTile)+'" height="'+f2(jointTile*1.6)+'">'
+    +'<rect width="'+f2(jointTile)+'" height="'+f2(jointTile*1.6)+'" fill="none"/>'
+    /* recessed grout line: dark hairline + soft light highlight below it = bevelled paver edge */
+    +'<line x1="0" y1="0" x2="'+f2(jointTile)+'" y2="0" stroke="#8f887c" stroke-opacity="0.55" stroke-width="1.4"/>'
+    +'<line x1="0" y1="1.4" x2="'+f2(jointTile)+'" y2="1.4" stroke="#f2ede3" stroke-opacity="0.30" stroke-width="0.7"/>'
+    +'<line x1="0" y1="0" x2="0" y2="'+f2(jointTile*1.6)+'" stroke="#8f887c" stroke-opacity="0.55" stroke-width="1.4"/>'
+    +'<line x1="1.4" y1="0" x2="1.4" y2="'+f2(jointTile*1.6)+'" stroke="#f2ede3" stroke-opacity="0.30" stroke-width="0.7"/>'
     +'</pattern>'
 
     /* ── Drop shadow used under each zone for real layered depth ── */
