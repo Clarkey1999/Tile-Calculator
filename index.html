@@ -310,7 +310,12 @@ function diagram(c){
   /* all coordinate helpers return numbers — no string arithmetic */
   var W=920,H=440,PAD=42;
   var oL=c.concOL,oW=c.concOW;
-  var sc=Math.min((W-PAD*2)/oL,(H-PAD*2)/oW);
+  /* Fit-to-box scale, but CAPPED at a max px-per-metre so a SMALL pool doesn't zoom up to
+     fill the frame (which made the fixed 0.4m coping tiles look huge/dwarfing on small pools).
+     Cap ≈ the default 7.3×3.6 pool's fit scale, so metres render at a consistent physical size
+     regardless of pool size — small pools now sit smaller in the frame with proportionate coping. */
+  var MAX_PPM=82;   /* px per metre cap (default pool fits at ~81) */
+  var sc=Math.min((W-PAD*2)/oL,(H-PAD*2)/oW,MAX_PPM);
   var ox=(W-oL*sc)/2, oy=(H-oW*sc)/2;
   var pL=S.poolL,pW=S.poolW,cW=S.copingW;
 
