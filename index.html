@@ -330,10 +330,39 @@ function diagram(c){
   /* ══ ZONE FILLS — outside-in: concrete → tile → coping (stone) → water ══ */
   if(c.hasConc) s+=rct(0,0,oL,oW,'fill="#201209" rx="7" filter="url(#dropsh)"');
   if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="#081d38" rx="4" filter="url(#dropsh)"');
-  /* coping — honed grey travertine: soft-veined stone base + crisp paver grid + gentle inner sheen */
-  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#stoneBase)" rx="3" filter="url(#graniteFleck)"');
-  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="url(#copingJoints)" rx="3"');
-  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="none" stroke="#f4efe6" stroke-opacity="0.35" stroke-width="1.2" rx="3"');
+  /* ── Coping: a SINGLE ROW of grey-travertine tiles wrapping the waterline, divided by
+     grout lines. Drawn as the stone ring (outer coping rect with the water rect knocked out
+     via even-odd), then grout lines struck only ACROSS the band perpendicular to each edge —
+     so it reads as one row of full coping tiles, never a grid of offset half-tiles. No dark
+     border. ── */
+  (function(){
+    var ox0=sx(oCX), oy0=sy(oCY), ow=sw(c.copOL), oh=sw(c.copOW);
+    var ix0=sx(oPX), iy0=sy(oPY), iw=sw(pL), ih=sw(pW);
+    var bw=sw(cW);                                   /* coping band width in px */
+    /* stone ring via even-odd fill (outer rect + inner water rect as hole) */
+    s+='<path fill="url(#stoneBase)" fill-rule="evenodd" d="'
+      +'M '+f2(ox0)+' '+f2(oy0)+' h '+f2(ow)+' v '+f2(oh)+' h '+f2(-ow)+' Z '
+      +'M '+f2(ix0)+' '+f2(iy0)+' h '+f2(iw)+' v '+f2(ih)+' h '+f2(-iw)+' Z"/>';
+    /* soft grain over the ring only (clipped to the ring) */
+    s+='<g clip-path="url(#copingRing)">'
+      +'<rect x="'+f2(ox0)+'" y="'+f2(oy0)+'" width="'+f2(ow)+'" height="'+f2(oh)+'" fill="url(#stoneGrain)" opacity="0.5"/>'
+      +'</g>';
+    /* grout lines: one tile ≈ 0.4m along each run. Lines cross the band width only. */
+    var tileLen=Math.max(0.30, cW*1.05);            /* tile length along the run (m) */
+    function grout(x1,y1,x2,y2){ s+='<line x1="'+f2(x1)+'" y1="'+f2(y1)+'" x2="'+f2(x2)+'" y2="'+f2(y2)+'" stroke="#7c766a" stroke-opacity="0.7" stroke-width="1.2"/>'; }
+    var n, i, t;
+    /* top & bottom rows: vertical grout lines across the band height */
+    n=Math.max(1,Math.round(c.copOL/tileLen));
+    for(i=1;i<n;i++){ t=oCX+c.copOL*i/n; grout(sx(t),oy0, sx(t),oy0+bw); grout(sx(t),oy0+oh-bw, sx(t),oy0+oh); }
+    /* left & right columns: horizontal grout lines across the band width (skip the corners already split) */
+    n=Math.max(1,Math.round(c.copOW/tileLen));
+    for(i=1;i<n;i++){ t=oCY+c.copOW*i/n; grout(ox0,sy(t), ox0+bw,sy(t)); grout(ox0+ow-bw,sy(t), ox0+ow,sy(t)); }
+    /* the 4 corner mitre lines where the rows meet the columns */
+    grout(ox0,oy0, ox0+bw,oy0+bw);           grout(ox0+ow,oy0, ox0+ow-bw,oy0+bw);
+    grout(ox0,oy0+oh, ox0+bw,oy0+oh-bw);     grout(ox0+ow,oy0+oh, ox0+ow-bw,oy0+oh-bw);
+    /* subtle inner + outer edge highlight for a honed-stone catch (no dark border) */
+    s+='<rect x="'+f2(ix0)+'" y="'+f2(iy0)+'" width="'+f2(iw)+'" height="'+f2(ih)+'" fill="none" stroke="#efeae0" stroke-opacity="0.4" stroke-width="1"/>';
+  })();
   /* water — uniform bright turquoise, fine sparse caustic sparkle (deterministic dots, strictly clipped) */
   s+=rct(oPX,oPY,pL,pW,'fill="url(#waterDeep)"');
   s+=rct(oPX,oPY,pL,pW,'fill="url(#deepPoolAccent)"');
@@ -442,7 +471,7 @@ function diagram(c){
   /* ══ ZONE BORDERS ══ */
   if(c.hasConc) s+=rct(0,0,oL,oW,'fill="none" stroke="rgba(224,146,64,.55)" stroke-width="1.5" rx="7"');
   if(hasTile)   s+=rct(c.cD,c.cA,c.tileOL,c.tileOW,'fill="none" stroke="rgba(0,170,255,.5)" stroke-width="1.5" rx="4"');
-  s+=rct(oCX,oCY,c.copOL,c.copOW,'fill="none" stroke="rgba(20,22,26,.6)" stroke-width="1.5" rx="3"');
+  /* (coping dark border removed — coping now has its own soft honed-stone edge highlight) */
   s+=rct(oPX,oPY,pL,pW,'fill="none" stroke="rgba(130,220,255,.85)" stroke-width="2"');
 
   /* ── pool centre label ── */
@@ -467,7 +496,7 @@ function diagram(c){
   /* ══ Coping label — dark warm text on the stone, its own distinct callout ══ */
   if(c.copOL*sc>140){
     s+=lbl(sx(oCX)+11, sy(oCY)+14, 'COPING · INCLUDED',
-      'font-family="Inter,sans-serif" font-size="8" font-weight="800" letter-spacing=".12em" fill="rgba(74,68,58,.72)" text-anchor="start"');
+      'font-family="Inter,sans-serif" font-size="8" font-weight="800" letter-spacing=".12em" fill="rgba(60,62,64,.72)" text-anchor="start"');
   }
 
   /* ══ zone labels on additional rows — "N Rows / T Total" ══ */
@@ -546,29 +575,23 @@ function diagram(c){
             then colour-mapped to a faint tonal drift — this is what real travertine
             veining looks like from above)
          3. a crisp rectangular PAVER grid on top so it reads as laid coping tiles ── */
-    +'<linearGradient id="stoneBase" x1="0" y1="0" x2="0.15" y2="1">'
-    +'<stop offset="0%" stop-color="#d8d4cd"/>'
-    +'<stop offset="45%" stop-color="#c7c2b9"/>'
-    +'<stop offset="100%" stop-color="#aca69b"/>'
+    /* true light-GREY travertine (neutral grey, no warm/cream cast) */
+    +'<linearGradient id="stoneBase" x1="0" y1="0" x2="0.1" y2="1">'
+    +'<stop offset="0%" stop-color="#cfd0d1"/>'
+    +'<stop offset="50%" stop-color="#bcbdbe"/>'
+    +'<stop offset="100%" stop-color="#a6a7a8"/>'
     +'</linearGradient>'
-    +'<filter id="graniteFleck" x="-5%" y="-5%" width="110%" height="110%">'
-    /* large soft travertine clouds: very low frequency, blurred, subtle */
-    +'<feTurbulence type="fractalNoise" baseFrequency="0.016 0.024" numOctaves="3" seed="8" result="clouds"/>'
-    +'<feGaussianBlur in="clouds" stdDeviation="0.5" result="softClouds"/>'
-    +'<feColorMatrix in="softClouds" type="matrix" values="0 0 0 0 0.58  0 0 0 0 0.56  0 0 0 0 0.51  0 0 0 0.22 -0.04" result="veinTone"/>'
-    /* very faint fine grain so it is not dead-flat, but low opacity so it never reads as noise */
-    +'<feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="3" result="grain"/>'
-    +'<feColorMatrix in="grain" type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.34  0 0 0 0 0.31  0 0 0 0.05 0" result="grainTone"/>'
-    +'<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="veinTone"/><feMergeNode in="grainTone"/></feMerge>'
+    /* soft grey cloud grain laid over the ring so the stone is not dead-flat (subtle) */
+    +'<filter id="stoneGrainFx" x="-5%" y="-5%" width="110%" height="110%">'
+    +'<feTurbulence type="fractalNoise" baseFrequency="0.02 0.03" numOctaves="2" seed="8" result="c"/>'
+    +'<feGaussianBlur in="c" stdDeviation="0.5" result="sc"/>'
+    +'<feColorMatrix in="sc" type="matrix" values="0 0 0 0 0.55  0 0 0 0 0.55  0 0 0 0 0.56  0 0 0 0.18 -0.03"/>'
     +'</filter>'
-    +'<pattern id="copingJoints" patternUnits="userSpaceOnUse" width="'+f2(jointTile)+'" height="'+f2(jointTile*1.6)+'">'
-    +'<rect width="'+f2(jointTile)+'" height="'+f2(jointTile*1.6)+'" fill="none"/>'
-    /* recessed grout line: dark hairline + soft light highlight below it = bevelled paver edge */
-    +'<line x1="0" y1="0" x2="'+f2(jointTile)+'" y2="0" stroke="#8f887c" stroke-opacity="0.55" stroke-width="1.4"/>'
-    +'<line x1="0" y1="1.4" x2="'+f2(jointTile)+'" y2="1.4" stroke="#f2ede3" stroke-opacity="0.30" stroke-width="0.7"/>'
-    +'<line x1="0" y1="0" x2="0" y2="'+f2(jointTile*1.6)+'" stroke="#8f887c" stroke-opacity="0.55" stroke-width="1.4"/>'
-    +'<line x1="1.4" y1="0" x2="1.4" y2="'+f2(jointTile*1.6)+'" stroke="#f2ede3" stroke-opacity="0.30" stroke-width="0.7"/>'
-    +'</pattern>'
+    +'<radialGradient id="stoneGrain"><stop offset="0%" stop-color="#b6b7b8"/><stop offset="100%" stop-color="#b0b1b2"/></radialGradient>'
+    /* clip = the coping ring (outer coping rect minus the water rect) */
+    +'<clipPath id="copingRing" clip-rule="evenodd"><path fill-rule="evenodd" d="'
+      +'M '+f2(sx(oCX))+' '+f2(sy(oCY))+' h '+f2(sw(c.copOL))+' v '+f2(sw(c.copOW))+' h '+f2(-sw(c.copOL))+' Z '
+      +'M '+f2(sx(oPX))+' '+f2(sy(oPY))+' h '+f2(sw(pL))+' v '+f2(sw(pW))+' h '+f2(-sw(pL))+' Z"/></clipPath>'
 
     /* ── Drop shadow used under each zone for real layered depth ── */
     +'<filter id="dropsh" x="-20%" y="-20%" width="140%" height="140%">'
