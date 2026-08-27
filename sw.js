@@ -1,7 +1,7 @@
 // Paradise Pools Tile & Concrete Calculator — service worker
 // Caches the app on first visit so it works fully offline afterwards.
 
-const CACHE_NAME = "pp-tile-calc-v19";
+const CACHE_NAME = "pp-tile-calc-v20";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,7 +9,8 @@ const ASSETS = [
   "./logo.png",
   "./icon-192.png",
   "./icon-512.png",
-  "./apple-touch-icon.png"
+  "./apple-touch-icon.png",
+  "./pool-brampton.jpg"
 ];
 
 self.addEventListener("install", (event) => {
