@@ -327,15 +327,16 @@ function diagram(c){
   var hasTile=S.tile.deep+S.tile.shallow+S.tile.sideA+S.tile.sideB>0;
   var s='';
 
-  /* ── Pool shell outline with ONE 45° cut corner at the shallow-right corner (matches the
-     reference fibreglass shape). Used for the water fill, the clip, and the waterline stroke. ── */
-  var chamfer=Math.max(0.30, Math.min(pW*0.28, pL*0.14));   /* size of the cut corner (m) — small, per reference */
-  var poolPath='M '+f2(sx(oPX))+' '+f2(sy(oPY))
-    +' L '+f2(sx(oPX+pL))+' '+f2(sy(oPY))                                   /* top edge → top-right */
-    +' L '+f2(sx(oPX+pL))+' '+f2(sy(oPY+pW-chamfer))                        /* down to chamfer start */
-    +' L '+f2(sx(oPX+pL-chamfer))+' '+f2(sy(oPY+pW))                        /* 45° cut */
-    +' L '+f2(sx(oPX))+' '+f2(sy(oPY+pW))                                   /* bottom edge → bottom-left */
-    +' Z';
+  /* ── Pool shell outline — a clean rectangle with small 45° cut corners on all four corners,
+     matching the reference Brampton shell (subtly cut, not sharp square corners). Used for the
+     water fill, the clip and the waterline stroke. ── */
+  var chamfer=Math.max(0.20, Math.min(pW*0.14, pL*0.05));   /* small corner cut (m) */
+  var X0=oPX, X1=oPX+pL, Y0=oPY, Y1=oPY+pW, ch=chamfer;
+  var poolPath='M '+f2(sx(X0+ch))+' '+f2(sy(Y0))
+    +' L '+f2(sx(X1-ch))+' '+f2(sy(Y0))+' L '+f2(sx(X1))+' '+f2(sy(Y0+ch))
+    +' L '+f2(sx(X1))+' '+f2(sy(Y1-ch))+' L '+f2(sx(X1-ch))+' '+f2(sy(Y1))
+    +' L '+f2(sx(X0+ch))+' '+f2(sy(Y1))+' L '+f2(sx(X0))+' '+f2(sy(Y1-ch))
+    +' L '+f2(sx(X0))+' '+f2(sy(Y0+ch))+' Z';
 
   /* ══ ZONE FILLS — outside-in: concrete → tile → coping (stone) → water ══ */
   if(c.hasConc) s+=rct(0,0,oL,oW,'fill="#201209" rx="7" filter="url(#dropsh)"');
@@ -398,32 +399,38 @@ function diagram(c){
   })();
   s+='</g>';
 
-  /* ── Entry STEPS at the shallow end, drawn top-down as a lighter-teal zone spanning the
-       shallow-end wall with straight step nosings parallel to that wall — the way pool steps
-       read from above in the reference. The zone is deepest at the wall and the chamfered
-       corner trims its outer corner cleanly. Two tiers, each lighter as it rises out. ── */
+  /* ── Bench + entry steps, matching the reference Brampton layout (deep end LEFT):
+       • A submerged BENCH/LEDGE runs the FULL LENGTH along the back long wall (Side A, top) —
+         the signature feature: a lighter band the whole length with a bright nosing lip.
+       • ENTRY STEPS sit in the DEEP-END corner (bottom-left): two tiers parallel to the deep
+         wall, lighter as they climb out.
+       All lighter than the floor, clipped to the shell so the corner cuts trim them. ── */
   (function(){
-    var stepZone=Math.max(0.6, Math.min(pL*0.24, 1.7));   /* how far the steps reach in from the shallow wall (m) */
-    var t1='#5ccadd', t2='#88e1ee';                         /* tier tones, lighter climbing out */
-    var xWall=oPX+pL;                                       /* shallow-end wall x */
+    var benchD=Math.max(0.30, Math.min(pW*0.20, 0.7));      /* bench depth off the back wall (m) */
+    var stepZone=Math.max(0.5, Math.min(pL*0.14, 1.4));     /* step reach in from the deep wall (m) */
+    var stepH=Math.min(pW*0.62, pW-benchD-0.2);             /* how far the deep-end steps span across the width */
+    var benchTone='#5ccadd', s1='#63d0e1', s2='#8fe4ef';
     s+='<defs><filter id="stepBlur" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>';
+
     s+='<g clip-path="url(#waterClip)">';
-    /* soft shadow the step zone casts onto the floor */
-    s+=rct(xWall-stepZone-0.10, oPY, 0.20, pW, 'fill="#023049" opacity="0.26" filter="url(#stepBlur)"');
-    /* tier 1 (lower/outer) — full step zone */
-    s+=rct(xWall-stepZone, oPY, stepZone, pW, 'fill="'+t1+'"');
-    /* tier 2 (upper/inner) — closer to the wall */
-    s+=rct(xWall-stepZone*0.55, oPY, stepZone*0.55, pW, 'fill="'+t2+'"');
+    /* full-length bench along the back (top / Side A) wall */
+    s+=rct(oPX, oPY, pL, benchD, 'fill="'+benchTone+'"');
+    /* deep-end entry steps (left), two tiers from the deep wall, spanning the lower part of the width */
+    var yStart=oPY+benchD;                                   /* steps start just below the bench */
+    s+=rct(oPX, yStart, stepZone, stepH, 'fill="'+s1+'"');
+    s+=rct(oPX, yStart, stepZone*0.5, stepH, 'fill="'+s2+'"');
     s+='</g>';
-    /* vertical nosing lines (parallel to the shallow wall) — bright lip + soft shadow */
-    function noseV(x){
-      s+=rct(x-0.07, oPY, 0.14, pW, 'fill="#022a40" opacity="0.32" filter="url(#stepBlur)"');
-      s+='<line x1="'+f2(sx(x))+'" y1="'+f2(sy(oPY))+'" x2="'+f2(sx(x))+'" y2="'+f2(sy(oPY+pW))+'" stroke="#eafcff" stroke-opacity="0.55" stroke-width="1.1"/>';
-    }
-    /* clip the nosing lines to the shell too so the chamfer trims them */
+
+    /* nosing lines: bright lip + soft shadow */
     s+='<g clip-path="url(#waterClip)">';
-    noseV(xWall-stepZone);
-    noseV(xWall-stepZone*0.55);
+    /* bench nosing (horizontal, along its inner edge) */
+    s+=rct(oPX, oPY+benchD-0.07, pL, 0.14, 'fill="#022a40" opacity="0.30" filter="url(#stepBlur)"');
+    s+='<line x1="'+f2(sx(oPX))+'" y1="'+f2(sy(oPY+benchD))+'" x2="'+f2(sx(oPX+pL))+'" y2="'+f2(sy(oPY+benchD))+'" stroke="#eafcff" stroke-opacity="0.55" stroke-width="1.1"/>';
+    /* deep-end step nosings (vertical, parallel to the deep wall) */
+    function noseV(x){
+      s+='<line x1="'+f2(sx(x))+'" y1="'+f2(sy(yStart))+'" x2="'+f2(sx(x))+'" y2="'+f2(sy(yStart+stepH))+'" stroke="#eafcff" stroke-opacity="0.55" stroke-width="1.1"/>';
+    }
+    noseV(oPX+stepZone); noseV(oPX+stepZone*0.5);
     s+='</g>';
   })();
 
