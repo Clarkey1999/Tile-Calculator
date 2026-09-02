@@ -686,7 +686,7 @@ document.addEventListener("click",function(e){
     var p=bump.dataset.bump.split(":"),path=p[0],d=parseFloat(p[1]);
     var ks=path.split("."),o=S;
     for(var i=0;i<ks.length-1;i++) o=o[ks[i]];
-    o[ks[ks.length-1]]=Math.round(Math.max(0,Math.min(10,o[ks[ks.length-1]]+d))*10)/10;
+    o[ks[ks.length-1]]=Math.round(Math.max(0,Math.min(20,o[ks[ks.length-1]]+d))*10)/10;
     render();return;
   }
   var tg=e.target.closest("[data-tog]");
